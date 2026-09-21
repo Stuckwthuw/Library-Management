@@ -12,8 +12,8 @@ Dự án được thực hiện bởi nhóm 2 sinh viên với phân chia nhiệ
 
 | Thành viên | Phân hệ phụ trách | Danh sách file được phép chỉnh sửa |
 | :--- | :--- | :--- |
-| **Lê Văn Hoàng Hiếu** (N24DECE018) | **Thẻ Độc Giả & Mượn Trả** | `DocGia.h`, `DocGia.cpp`, `MuonTra.h`, `MuonTra.cpp`, `Data/DocGia.txt` |
-| **Lê Anh Đức** (N24DECE012) | **Đầu Sách, DMS & Core UI** | `DauSach.h`, `DauSach.cpp`, `DanhMucSach.h`, `DanhMucSach.cpp`, `UI.h`, `UI.cpp`, `Date.h`, `Date.cpp`, `Data/DauSach.txt` |
+| **Lê Văn Hoàng Hiếu** (N24DECE018) | **Thẻ Độc Giả & Mượn Trả** | `DocGia.h`, `DocGia/*.cpp`, `MuonTra.h`, `MuonTra/*.cpp`, `Data/DocGia.txt` |
+| **Lê Anh Đức** (N24DECE012) | **Đầu Sách, DMS & Core UI** | `DauSach.h`, `DauSach/*.cpp`, `DanhMucSach.h`, `DanhMucSach/*.cpp`, `UI.h`, `UI/*.cpp`, `Date.h`, `Date/*.cpp`, `Data/DauSach.txt` |
 | **File dùng chung (Cả hai)** | **Khung kiến trúc & Khởi chạy** | `CauTruc.h`, `main.cpp`, `README.md`, `KE_HOACH_PHAN_CHIA_CONG_VIEC.md` |
 
 ### ⛔ QUY TẮC BẤT KHẢ XÂM PHẠM:
@@ -23,20 +23,24 @@ Dự án được thực hiện bởi nhóm 2 sinh viên với phân chia nhiệ
 
 ---
 
-## 2. MODULAR HÓA & TÁCH BIỆT FILE MÃ NGUỒN (CODE MODULARIZATION)
+## 2. MODULAR HÓA & TÁCH BIỆT FILE MÃ NGUỒN (CLEAN ARCHITECTURE & SRP)
 
-- **Tách file độc lập theo từng phân hệ**: Tuyệt đối không dồn code vào một file khổng lồ hoặc viết toàn bộ trong `main.cpp`.
-- **Nguyên tắc Header (`.h`) & Cài đặt (`.cpp`)**:
-  - File `.h` chỉ chứa định nghĩa struct, hằng số và khai báo nguyên mẫu hàm (Function Prototypes), có `#pragma once` chống include lặp.
-  - File `.cpp` chứa mã cài đặt chi tiết của các hàm.
-- **Cấu trúc chia file bắt buộc**:
-  - `DocGia.h / .cpp`: Toàn bộ Cây BST và chức năng độc giả (a, b).
-  - `MuonTra.h / .cpp`: Toàn bộ DSLK mượn trả và chức năng mượn/trả, quá hạn (f, g, h, i).
-  - `DauSach.h / .cpp`: Mảng con trỏ đầu sách và chức năng (c, d, e, j).
-  - `DanhMucSach.h / .cpp`: DSLK danh mục sách gắn với đầu sách.
-  - `UI.h / .cpp`: Đồ họa console, khung viền, menu mũi tên, bảng phân trang.
-  - `Date.h / .cpp`: Xử lý ngày tháng, tính khoảng cách ngày.
-  - `main.cpp`: Chỉ chứa vòng lặp menu chính và gọi các hàm từ các module.
+- **Tách file độc lập theo từng nhóm nghiệp vụ (Single Responsibility Principle - SRP)**:
+  - **TUYỆT ĐỐI KHÔNG dồn code vào một file khổng lồ** (như `DauSach.cpp` hay `DocGia.cpp` 700-1000 dòng).
+  - Bắt buộc chia nhỏ các chức năng thành từng file riêng trong thư mục của phân hệ để dễ debug, tra cứu nhanh và bảo vệ vấn đáp điểm tối đa.
+- **Nguyên tắc Header tổng (`Master Header .h`) & Thư mục triển khai (`Subdirectory/*.cpp`)**:
+  - Mỗi phân hệ có một **Header tổng** đặt tại thư mục gốc (`DocGia.h`, `MuonTra.h`, `DauSach.h`, `DanhMucSach.h`, `UI.h`, `Date.h`) chứa các nguyên mẫu hàm (prototypes).
+  - Các hàm được cài đặt chi tiết trong các file `.cpp` độc lập bên trong thư mục con tương ứng. Các file con này chỉ cần `#include "../<TenHeader>.h"`.
+- **Cấu trúc phân chia thư mục bắt buộc**:
+  - **Phân hệ Hiếu**:
+    + `DocGia.h` + Thư mục `DocGia/`: `DocGia_Core.cpp`, `DocGia_MaThe.cpp`, `DocGia_Them.cpp`, `DocGia_HieuChinh.cpp`, `DocGia_Xoa.cpp`, `DocGia_In.cpp`, `DocGia_File.cpp`.
+    + `MuonTra.h` + Thư mục `MuonTra/`: `MuonTra_Core.cpp`, `MuonTra_Muon.cpp`, `MuonTra_Tra.cpp`, `MuonTra_LietKe.cpp`, `MuonTra_QuaHan.cpp`.
+  - **Phân hệ Đức**:
+    + `DauSach.h` + Thư mục `DauSach/`: `DauSach_Core.cpp`, `DauSach_Them.cpp`, `DauSach_TimKiem.cpp`, `DauSach_TheLoai.cpp`, `DauSach_Top10.cpp`, `DauSach_File.cpp`.
+    + `DanhMucSach.h` + Thư mục `DanhMucSach/`: `DanhMucSach_Core.cpp`, `DanhMucSach_MaSach.cpp`, `DanhMucSach_Them.cpp`, `DanhMucSach_TrangThai.cpp`.
+    + `Date.h` + Thư mục `Date/`: `Date_Core.cpp`, `Date_KhoangCach.cpp`.
+    + `UI.h` + Thư mục `UI/`: `UI_Console.cpp`, `UI_Menu.cpp`, `UI_Table.cpp`.
+  - `main.cpp`: Chỉ chứa vòng lặp menu chính và gọi các hàm từ Master Headers.
 
 ---
 

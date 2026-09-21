@@ -39,53 +39,99 @@ graph TD
 ---
 
 ## 3. BẢNG PHÂN CHIA NHIỆM VỤ CHI TIẾT (50 / 50)
+> **Quy chuẩn kiến trúc**: Cả hai thành viên đều triển khai theo mô hình **Clean Architecture & Single Responsibility Principle (SRP)**. Mỗi nhóm chức năng được tách thành một file `.cpp` riêng biệt nằm trong thư mục của phân hệ để dễ dàng kiểm thử, bảo trì và tự tin trả lời vấn đáp trực tiếp từng dòng code.
 
 ### 3.1. THÀNH VIÊN 1: HIẾU
 > **Trọng tâm**: Quản lý Cây BST Độc giả, Danh sách liên kết Mượn Trả & Toàn bộ Logic Giao dịch Mượn/Trả/Quá hạn.
 
-| STT | Hạng mục công việc | Yêu cầu kỹ thuật & Giải thuật | Trọng số & Sản phẩm |
-| :---: | :--- | :--- | :---: |
-| **H1** | **Cấu trúc Dữ liệu Độc giả & Mượn trả** | • Cài đặt Cây BST cho Thẻ độc giả (`TheDocGia`, `TREE_DocGia`).<br>• Cài đặt DSLK đơn cho Mượn Trả (`MuonTra`, `NodeMuonTra`). | `DocGia.h`<br>`MuonTra.h` |
-| **H2** | **Chức năng (a) - Quản lý Thẻ Độc Giả** | • **Thêm thẻ**: Tự động sinh `MATHE` (số nguyên ngẫu nhiên/tuần tự không trùng với thẻ cũ), Phái chỉ nhận `'Nam'` hoặc `'Nữ'`, Trạng thái = 1 (hoạt động). Thêm node vào cây BST.<br>• **Hiệu chỉnh thẻ**: Tìm theo `MATHE`, sửa Họ, Tên, Phái, Trạng thái (khóa/mở).<br>• **Xóa thẻ**: Cài đặt chuẩn thuật toán xóa node trên cây BST (xóa node lá, node 1 con, node 2 con tìm node thế mạng). Ràng buộc: Không cho xóa thẻ nếu độc giả đang mượn sách chưa trả. | `DocGia.cpp` |
-| **H3** | **Chức năng (b) - In danh sách độc giả** | • **Chế độ 1**: In theo `MATHE` tăng dần $\rightarrow$ Duyệt cây BST theo thứ tự LNR (In-order traversal).<br>• **Chế độ 2**: In theo Tên + Họ tăng dần $\rightarrow$ Duyệt cây nạp vào mảng con trỏ phụ, viết thuật toán sắp xếp (QuickSort hoặc MergeSort) theo Tên, nếu trùng tên thì so sánh Họ. | `DocGia.cpp` |
-| **H4** | **Chức năng (f) - Nghiệp vụ Mượn Sách** | • Nhập `MATHE` $\rightarrow$ Liệt kê các sách đang mượn.<br>• **Kiểm tra 3 điều kiện**: (1) Thẻ đang hoạt động (`TrangThai == 1`), (2) Số lượng sách đang mượn $< 3$ cuốn, (3) Không có cuốn nào mượn quá 7 ngày.<br>• Nếu đủ điều kiện $\rightarrow$ Cho nhập `MASACH`, kiểm tra sách có `TrangThai == 0` (cho mượn được) không $\rightarrow$ Thêm vào DSLK Mượn Trả, cập nhật trạng thái cuốn sách bên DMS thành `1` (đã mượn). | `MuonTra.cpp` |
-| **H5** | **Chức năng (g) - Nghiệp vụ Trả Sách / Mất Sách** | • Nhập `MATHE` và `MASACH`.<br>• Cập nhật `NgayTra` = ngày hiện tại.<br>• Nếu trả sách $\rightarrow$ đổi trạng thái mượn trả thành `1`, cập nhật trạng thái cuốn sách bên DMS về `0`.<br>• Nếu làm mất sách $\rightarrow$ đổi trạng thái mượn trả thành `2`, cập nhật trạng thái cuốn sách bên DMS thành `2` (thanh lý). | `MuonTra.cpp` |
-| **H6** | **Chức năng (h) - Liệt kê sách độc giả đang mượn** | • Nhập `MATHE` X $\rightarrow$ Duyệt DSLK Mượn Trả lọc các node có `TrangThai == 0`.<br>• Từ `MASACH`, gọi hàm tra cứu của Đức để lấy `TenSach` tương ứng in ra màn hình. | `MuonTra.cpp` |
-| **H7** | **Chức năng (i) - Danh sách độc giả quá hạn** | • Duyệt toàn bộ Cây BST độc giả $\rightarrow$ kiểm tra từng sách đang mượn xem có `(NgayHienTai - NgayMuon) > 7` ngày.<br>• Đưa các độc giả quá hạn vào danh sách phụ kèm số ngày quá hạn.<br>• Sắp xếp danh sách phụ giảm dần theo số ngày quá hạn và in ra màn hình. | `MuonTra.cpp` |
-| **H8** | **Lưu trữ File Độc Giả & Mượn Trả** | • Viết hàm nạp file `DocGia.txt` khi mở chương trình (tạo lại cây BST và danh sách mượn trả của từng người).<br>• Viết hàm lưu cây BST và danh sách mượn trả vào file `DocGia.txt` khi đóng chương trình. | `DocGia.cpp` |
+| STT | Hạng mục công việc | Yêu cầu kỹ thuật & Giải thuật | Sản phẩm mã nguồn (File) |
+| :---: | :--- | :--- | :--- |
+| **H1** | **Cơ sở Cây BST & Quản lý Bộ nhớ** | • Khởi tạo cây, kiểm tra rỗng, đếm node đệ quy.<br>• Giải phóng DSLK mượn trả & thu hồi toàn bộ cây BST theo hậu thứ tự (LRN). Chống dangling pointer. | `DocGia.h`<br>`DocGia/DocGia_Core.cpp` |
+| **H2** | **Quản lý Mã thẻ & LCG chu kỳ đầy** | • Tìm kiếm theo mã thẻ O(log N).<br>• Cài đặt bộ sinh số đồng dư tuyến tính LCG (Hull-Dobell): O(1), sinh mã duy nhất, cây BST tự cân bằng tự nhiên. | `DocGia/DocGia_MaThe.cpp` |
+| **H3** | **Chức năng (a) - Thêm, Sửa, Xóa Độc Giả** | • **Thêm thẻ**: Chèn node BST, bẫy trùng mã và tràn RAM.<br>• **Hiệu chỉnh**: Tìm O(log N), sửa họ tên, phái, trạng thái (bảo toàn maThe).<br>• **Xóa thẻ**: Bẫy lỗi đang mượn sách. Xóa 3 trường hợp: node lá, node 1 con, node 2 con (tìm node thế mạng nhỏ nhất bên phải, tách an toàn `dsMuonTra`). | `DocGia/DocGia_Them.cpp`<br>`DocGia/DocGia_HieuChinh.cpp`<br>`DocGia/DocGia_Xoa.cpp` |
+| **H4** | **Chức năng (b) - In danh sách độc giả** | • **Chế độ 1**: In theo `maThe` tăng dần $\rightarrow$ Duyệt cây BST LNR (In-order).<br>• **Chế độ 2**: In theo Tên + Họ tăng dần $\rightarrow$ Đổ cây vào mảng con trỏ tạm, QuickSort phân hoạch Median-of-Three. | `DocGia/DocGia_In.cpp` |
+| **H5** | **Cơ sở DSLK Mượn Trả** | • Khởi tạo DSLK mượn trả, kiểm tra rỗng, giải phóng danh sách. | `MuonTra.h`<br>`MuonTra/MuonTra_Core.cpp` |
+| **H6** | **Chức năng (f) - Nghiệp vụ Mượn Sách** | • Bẫy 3 điều kiện tiên quyết: (1) Thẻ đang mở (`trangThai == 1`), (2) Số sách đang mượn $< 3$ cuốn, (3) Không có sách mượn quá 7 ngày.<br>• Đủ điều kiện $\rightarrow$ thêm `NodeMuonTra`, gọi API Đức cập nhật sách bên DMS sang `1` (đã mượn). | `MuonTra/MuonTra_Muon.cpp` |
+| **H7** | **Chức năng (g) - Trả / Báo Mất Sách** | • Cập nhật `ngayTra = ngayHienTai`.<br>• Trả sách: `trangThai = 1`, gọi Đức đổi sách bên DMS về `0` (cho mượn).<br>• Báo mất sách: `trangThai = 2`, gọi Đức đổi sách bên DMS thành `2` (thanh lý). | `MuonTra/MuonTra_Tra.cpp` |
+| **H8** | **Chức năng (h) - Liệt kê Sách Đang Mượn** | • Duyệt DSLK `dsMuonTra` lọc các node có `trangThai == 0`.<br>• Tách ISBN tra cứu tên sách từ module của Đức in ra màn hình. | `MuonTra/MuonTra_LietKe.cpp` |
+| **H9** | **Chức năng (i) - Danh sách Quá Hạn** | • Duyệt toàn bộ cây BST, tìm các sách đang mượn có `(NgayHienTai - NgayMuon) > 7`.<br>• Nạp mảng tạm, sắp xếp giảm dần theo số ngày quá hạn. | `MuonTra/MuonTra_QuaHan.cpp` |
+| **H10**| **Lưu trữ File Độc Giả & Mượn Trả** | • Đọc file `DocGia.txt` nạp cây BST và DSLK mượn trả.<br>• Ghi file `DocGia.txt` theo tiền thứ tự (NLR) để bảo toàn phân nhánh cây BST ban đầu khi nạp lại. | `DocGia/DocGia_File.cpp` |
 
 ---
 
 ### 3.2. THÀNH VIÊN 2: ĐỨC
 > **Trọng tâm**: Quản lý Mảng con trỏ Đầu Sách, DSLK Danh Mục Sách, Thống kê Top 10, Module Ngày tháng & Xây dựng Core UI Console.
 
-| STT | Hạng mục công việc | Yêu cầu kỹ thuật & Giải thuật | Trọng số & Sản phẩm |
-| :---: | :--- | :--- | :---: |
-| **Đ1** | **Cấu trúc Dữ liệu Đầu Sách & Danh Mục Sách** | • Cài đặt Mảng con trỏ cho Đầu sách (`DauSach* DSDS[MAX]`), quản lý số lượng `n`.<br>• Cài đặt DSLK đơn cho Danh mục sách (`DanhMucSach`, `NodeDMS`). | `DauSach.h`<br>`DanhMucSach.h` |
-| **Đ2** | **Chức năng (c) - Nhập Đầu Sách & Đánh mã tự động** | • **Thêm đầu sách**: Nhập ISBN, Tên sách, Số trang, Tác giả, Năm XB, Thể loại. Chèn vào mảng con trỏ sao cho **danh sách luôn luôn tăng dần theo Tên sách** (tìm vị trí chèn và dời mảng).<br>• **Tự động đánh mã sách**: Nhập số lượng bản sách cần nhập cho đầu sách này, tự động sinh mã dạng `[ISBN]_[STT]` (ví dụ: `IT01_1`, `IT01_2`...). Thuật toán này giúp từ mã sách tra ra ngay ISBN và tìm nhị phân trên mảng con trỏ với tốc độ $O(\log N)$. | `DauSach.cpp`<br>`DanhMucSach.cpp` |
-| **Đ3** | **Chức năng (d) - In danh sách theo Thể loại** | • Thu thập danh sách các thể loại duy nhất.<br>• Duyệt in theo từng thể loại: Trong mỗi thể loại, in các đầu sách theo thứ tự tên sách tăng dần (đã có sẵn thứ tự từ mảng con trỏ). | `DauSach.cpp` |
-| **Đ4** | **Chức năng (e) - Tìm thông tin sách theo Tên sách** | • Nhập tên sách (hỗ trợ tìm chính xác hoặc tìm kiếm gần đúng/chứa ký tự).<br>• In ra: ISBN, Tên sách, Tác giả, Số trang, Năm XB, Thể loại.<br>• Duyệt con trỏ `dms` in toàn bộ các mã sách con kèm trạng thái (0: Cho mượn, 1: Đã mượn, 2: Thanh lý) và vị trí trên giá. | `DauSach.cpp` |
-| **Đ5** | **Chức năng (j) - Top 10 sách mượn nhiều nhất** | • Tạo mảng thống kê tạm chứa `{ISBN, TenSach, SoLuotMuon}`.<br>• Duyệt qua toàn bộ lịch sử mượn trả của tất cả độc giả (nhận dữ liệu từ cây độc giả của Hiếu) $\rightarrow$ đếm tần suất mượn theo từng ISBN.<br>• Sắp xếp giảm dần theo `SoLuotMuon` và in ra 10 đầu sách dẫn đầu. | `DauSach.cpp` |
-| **Đ6** | **Module Xử lý Ngày Tháng (`Date.h/cpp`)** | • Cài đặt struct `Date { int ngay, thang, nam; }`.<br>• Hàm lấy ngày tháng năm hiện tại của hệ thống.<br>• Hàm kiểm tra ngày hợp lệ (xử lý năm nhuận, tháng 2 có 28/29 ngày, tháng 30/31 ngày).<br>• Hàm tính khoảng cách số ngày giữa 2 mốc `Date` để phục vụ tính quá hạn 7 ngày. | `Date.h`<br>`Date.cpp` |
-| **Đ7** | **Xây dựng Nền tảng UI Console Dùng Chung** | • Xây dựng menu điều hướng bằng phím mũi tên (`Up`, `Down`, `Enter`, `ESC`).<br>• Hàm xóa màn hình mượt, vẽ khung viền (box), tô màu chữ/nền (`SetConsoleTextAttribute`).<br>• Viết component hiển thị bảng dữ liệu có phân trang (tránh bị tràn màn hình khi có hàng trăm cuốn sách/độc giả). | `UI.h`<br>`UI.cpp` |
-| **Đ8** | **Lưu trữ File Đầu Sách & Danh Mục Sách** | • Viết hàm nạp file `DauSach.txt` khi mở chương trình.<br>• Viết hàm lưu toàn bộ mảng con trỏ đầu sách và danh mục sách con vào file `DauSach.txt` khi đóng chương trình. | `DauSach.cpp` |
+| STT | Hạng mục công việc | Yêu cầu kỹ thuật & Giải thuật | Sản phẩm mã nguồn (File) |
+| :---: | :--- | :--- | :--- |
+| **Đ1** | **Cơ sở Mảng Con Trỏ Đầu Sách & DMS** | • Khởi tạo mảng con trỏ `DSDS[MAX]`, kiểm tra mảng đầy/rỗng, giải phóng toàn bộ mảng con trỏ.<br>• Khởi tạo DSLK đơn `DanhMucSach`, giải phóng DSLK sách con khi xóa đầu sách. | `DauSach.h`<br>`DauSach/DauSach_Core.cpp`<br>`DanhMucSach.h`<br>`DanhMucSach/DanhMucSach_Core.cpp` |
+| **Đ2** | **Chức năng (c) - Nhập Đầu Sách & Đánh Mã Tự Động** | • **Thêm đầu sách**: Nhập thông tin, chèn giữ thứ tự tăng dần theo `tenSach` (dời mảng con trỏ).<br>• **Đánh mã tự động**: Tự động sinh mã sách con dạng `[ISBN]_[STT]` (ví dụ: `IT01_1`, `IT01_2`), thêm vào DSLK DMS. | `DauSach/DauSach_Them.cpp`<br>`DanhMucSach/DanhMucSach_MaSach.cpp`<br>`DanhMucSach/DanhMucSach_Them.cpp` |
+| **Đ3** | **Chức năng (d) - In Sách theo Thể Loại** | • Thu thập danh sách các thể loại duy nhất.<br>• Duyệt in theo từng thể loại, tên sách tự động tăng dần do mảng con trỏ đã có thứ tự. | `DauSach/DauSach_TheLoai.cpp` |
+| **Đ4** | **Chức năng (e) - Tìm Sách & Cập nhật Trạng thái** | • Tìm kiếm theo tên sách (chính xác / gần đúng chứa chuỗi ký tự). Tìm kiếm nhị phân theo ISBN $O(\log N)$.<br>• In chi tiết các cuốn sách con trong `dms`.<br>• Hàm API cập nhật trạng thái sách (0: Cho mượn, 1: Đã mượn, 2: Thanh lý) để phân hệ Hiếu gọi. | `DauSach/DauSach_TimKiem.cpp`<br>`DanhMucSach/DanhMucSach_TrangThai.cpp` |
+| **Đ5** | **Chức năng (j) - Top 10 Sách Mượn Nhiều Nhất** | • Tạo mảng thống kê tạm `{ISBN, tenSach, soLuotMuon}`.<br>• Duyệt qua toàn bộ lịch sử mượn trả của tất cả độc giả (nhận con trỏ cây từ Hiếu) $\rightarrow$ đếm tần suất mượn theo từng ISBN.<br>• Sắp xếp giảm dần theo lượt mượn (QuickSort / SelectionSort) và in ra 10 đầu sách dẫn đầu. | `DauSach/DauSach_Top10.cpp` |
+| **Đ6** | **Module Xử lý Ngày Tháng (`Date`)** | • Khởi tạo struct `Date { int ngay, thang, nam; }`.<br>• Lấy ngày hiện tại hệ thống từ `<ctime>`.<br>• Kiểm tra ngày hợp lệ (năm nhuận, tháng 28/29/30/31 ngày).<br>• Tính khoảng cách số ngày giữa 2 mốc `Date` (quy về số ngày từ mốc 0 hoặc thuật toán trừ ngày) để phục vụ tính phạt quá hạn 7 ngày. | `Date.h`<br>`Date/Date_Core.cpp`<br>`Date/Date_KhoangCach.cpp` |
+| **Đ7** | **Xây dựng Nền tảng UI Console Dùng Chung** | • Đồ họa console: Xóa màn hình mượt, đặt vị trí con trỏ `gotoxy`, ẩn/hiện con trỏ, vẽ khung viền (box), đổi màu chữ/nền (`SetConsoleTextAttribute`).<br>• Menu tương tác bằng phím mũi tên (`Up`, `Down`, `Enter`, `ESC`) với `_getch()`.<br>• Component hiển thị bảng phân trang (Pagination) chống tràn màn hình khi in danh sách dài. | `UI.h`<br>`UI/UI_Console.cpp`<br>`UI/UI_Menu.cpp`<br>`UI/UI_Table.cpp` |
+| **Đ8** | **Lưu trữ File Đầu Sách & Danh Mục Sách** | • Đọc file `DauSach.txt` nạp mảng con trỏ đầu sách và danh sách sách con khi mở chương trình.<br>• Ghi toàn bộ mảng con trỏ và danh mục sách con vào file `DauSach.txt` khi đóng chương trình. | `DauSach/DauSach_File.cpp` |
 
 ---
 
-## 4. GIAO ƯỚC DỮ LIỆU & FILE CHUNG (CONTRACT)
+## 4. GIAO ƯỚC DỮ LIỆU & KIẾN TRÚC TOÀN HỆ THỐNG (CONTRACT)
 
-Để tránh xung đột khi code, hai bạn thống nhất cấu trúc file dự án như sau:
+Để tránh xung đột khi code độc lập, hai bạn thống nhất cấu trúc file và thư mục chuẩn như sau:
 
 ```
-QuanLyThuVien/
+Library-Management/
 │
-├── CauTruc.h          # [FILE CHUNG] Khai báo struct và hằng số toàn cục
-├── Date.h / Date.cpp  # [ĐỨC] Xử lý ngày tháng, tính khoảng cách ngày
-├── UI.h / UI.cpp      # [ĐỨC] Khung giao diện console, màu sắc, menu, phân trang
-├── DauSach.h / .cpp   # [ĐỨC] Mảng con trỏ đầu sách, danh mục sách, câu c, d, e, j
-├── DocGia.h / .cpp    # [HIẾU] Cây BST độc giả, câu a, b
-├── MuonTra.h / .cpp   # [HIẾU] DSLK mượn trả, nghiệp vụ câu f, g, h, i
-└── main.cpp           # [CẢ HAI] Ráp menu tổng, gọi luồng chính và giải phóng bộ nhớ
+├── CauTruc.h                      # [FILE CHUNG - BẤT BIẾN] Khai báo struct và hằng số toàn cục
+├── README.md                      # [CHUNG] Giới thiệu, phân công & hướng dẫn biên dịch
+├── KE_HOACH_PHAN_CHIA_CONG_VIEC.md# [CHUNG] Kế hoạch chi tiết WBS & thiết kế giải thuật
+├── AGENTS.md                      # [CHUNG] Quy chuẩn làm việc cho AI Agent của cả hai
+├── main.cpp                       # [CHUNG] Menu tổng, điều hướng và giải phóng bộ nhớ
+│
+├── ── PHÂN HỆ HIẾU (ĐỘC GIẢ & MƯỢN TRẢ) ──────────────────────────────────
+├── DocGia.h                       # Master Header Thẻ Độc Giả
+├── DocGia/                        # Thư mục cài đặt chức năng thẻ độc giả
+│   ├── DocGia_Core.cpp            # Khởi tạo, kiểm tra rỗng, đếm node, giải phóng cây BST (LRN)
+│   ├── DocGia_MaThe.cpp           # Tìm kiếm mã thẻ & Bộ sinh mã tự động LCG chu kỳ đầy
+│   ├── DocGia_Them.cpp            # Chèn node độc giả mới vào cây BST
+│   ├── DocGia_HieuChinh.cpp       # Cập nhật thông tin độc giả (bảo toàn maThe)
+│   ├── DocGia_Xoa.cpp             # Bẫy mượn sách, tìm node thế mạng, xóa node BST
+│   ├── DocGia_In.cpp              # In LNR theo mã thẻ & QuickSort Median-of-Three theo tên họ
+│   └── DocGia_File.cpp            # Đọc & Ghi file DocGia.txt (tiền thứ tự NLR)
+├── MuonTra.h                      # Master Header Mượn Trả
+├── MuonTra/                       # Thư mục cài đặt chức năng mượn trả
+│   ├── MuonTra_Core.cpp           # Khởi tạo, giải phóng DSLK mượn trả
+│   ├── MuonTra_Muon.cpp           # Nghiệp vụ mượn sách (kiểm tra 3 điều kiện)
+│   ├── MuonTra_Tra.cpp            # Nghiệp vụ trả sách / báo mất sách
+│   ├── MuonTra_LietKe.cpp         # Liệt kê sách đang mượn của độc giả
+│   └── MuonTra_QuaHan.cpp         # Lọc danh sách độc giả quá hạn 7 ngày
+│
+├── ── PHÂN HỆ ĐỨC (ĐẦU SÁCH, DMS, UI & DATE) ─────────────────────────────
+├── DauSach.h                      # Master Header Đầu Sách
+├── DauSach/                       # Thư mục cài đặt chức năng đầu sách
+│   ├── DauSach_Core.cpp           # Khởi tạo, giải phóng mảng con trỏ đầu sách
+│   ├── DauSach_Them.cpp           # Chèn đầu sách giữ thứ tự tăng dần theo tên
+│   ├── DauSach_TimKiem.cpp        # Tìm sách theo tên, tìm nhị phân theo ISBN
+│   ├── DauSach_TheLoai.cpp        # Lọc danh sách đầu sách theo từng thể loại
+│   ├── DauSach_Top10.cpp          # Thống kê Top 10 sách mượn nhiều nhất
+│   └── DauSach_File.cpp           # Đọc & Ghi file DauSach.txt
+├── DanhMucSach.h                  # Master Header Danh Mục Sách
+├── DanhMucSach/                   # Thư mục cài đặt danh mục sách con
+│   ├── DanhMucSach_Core.cpp       # Khởi tạo, giải phóng DSLK sách con
+│   ├── DanhMucSach_MaSach.cpp     # Đánh mã sách tự động [ISBN]_[STT]
+│   ├── DanhMucSach_Them.cpp       # Thêm sách con vào danh mục
+│   └── DanhMucSach_TrangThai.cpp  # Cập nhật trạng thái sách (0, 1, 2)
+├── Date.h                         # Master Header Module Ngày Tháng
+├── Date/                          # Thư mục xử lý ngày tháng
+│   ├── Date_Core.cpp              # Lấy ngày hệ thống, kiểm tra ngày hợp lệ (năm nhuận)
+│   └── Date_KhoangCach.cpp        # Tính khoảng cách số ngày giữa 2 mốc Date
+├── UI.h                           # Master Header Giao Diện Console
+├── UI/                            # Thư mục giao diện console
+│   ├── UI_Console.cpp             # Xóa màn hình, gotoxy, màu sắc, vẽ box
+│   ├── UI_Menu.cpp                # Menu điều hướng bằng phím mũi tên
+│   └── UI_Table.cpp               # Bảng hiển thị phân trang chống tràn
+│
+└── Data/                          # Thư mục chứa file dữ liệu (DocGia.txt, DauSach.txt)
 ```
 
 ### 4.1. Khung dữ liệu thống nhất trong `CauTruc.h`
