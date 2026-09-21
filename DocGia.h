@@ -20,6 +20,10 @@ bool KiemTraCayRong(TREE_DocGia root);
 // Mục đích: Đếm số lượng node hiện có trên cây BST bằng giải thuật đệ quy.
 int DemSoLuongDocGia(TREE_DocGia root);
 
+// [HÀM GIẢI PHÓNG DSLK MƯỢN TRẢ CỦA MỘT ĐỘC GIẢ]
+// Mục đích: Thu hồi bộ nhớ danh sách liên kết mượn trả khi xóa một độc giả hoặc khi giải phóng toàn bộ cây.
+void GiaiPhongDSMuonTra(NodeMuonTra *&dsMuonTra);
+
 // [HÀM GIẢI PHÓNG TOÀN BỘ BỘ NHỚ CỦA CÂY BST]
 // Mục đích: Thu hồi toàn bộ bộ nhớ đã cấp phát động (tránh rò rỉ bộ nhớ -
 // Memory Leak). Giải thuật: Duyệt hậu thứ tự (Post-order: LRN - Trái -> Phải ->
