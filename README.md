@@ -46,13 +46,52 @@ QuanLyThuVien/
 │
 ├── README.md                      # Giới thiệu đồ án & phân chia công việc
 ├── KE_HOACH_PHAN_CHIA_CONG_VIEC.md# Tài liệu chi tiết kế hoạch & phân công WBS
-├── CauTruc.h                      # Khai báo struct và các hằng số toàn cục
-├── Date.h / Date.cpp              # Xử lý ngày tháng, kiểm tra hợp lệ, tính số ngày quá hạn
-├── UI.h / UI.cpp                  # Giao diện Console, màu sắc, bắt phím mũi tên, phân trang
-├── DauSach.h / DauSach.cpp        # Quản lý Mảng con trỏ Đầu sách & chức năng c, d, e, j
-├── DanhMucSach.h / .cpp           # Quản lý DSLK Danh mục sách
-├── DocGia.h / DocGia.cpp          # Quản lý Cây BST Thẻ độc giả & chức năng a, b
-├── MuonTra.h / MuonTra.cpp        # Quản lý DSLK Mượn Trả & nghiệp vụ f, g, h, i
+├── AGENTS.md                      # Hướng dẫn và quy chuẩn nghiêm ngặt cho AI Agents
+├── CauTruc.h                      # [Frozen Contract] Khai báo struct và các hằng số toàn cục
+│
+├── ── PHÂN HỆ HIẾU (ĐỘC GIẢ & MƯỢN TRẢ) ──────────────────────────────────
+├── DocGia.h                       # Khai báo nguyên mẫu hàm Thẻ độc giả
+├── DocGia/                        # Thư mục module hóa các chức năng độc giả
+│   ├── DocGia_Core.cpp            # Quản lý bộ nhớ & khởi tạo cây BST
+│   ├── DocGia_MaThe.cpp           # Tìm kiếm mã thẻ & sinh mã tự động LCG
+│   ├── DocGia_Them.cpp            # Nghiệp vụ thêm độc giả vào cây BST
+│   ├── DocGia_HieuChinh.cpp       # Hiệu chỉnh thông tin độc giả
+│   ├── DocGia_Xoa.cpp             # Xóa node BST (lá, 1 con, 2 con thế mạng)
+│   ├── DocGia_In.cpp              # In LNR tăng dần & QuickSort theo tên họ
+│   └── DocGia_File.cpp            # Đọc / Ghi file DocGia.txt (NLR)
+├── MuonTra.h                      # Khai báo nguyên mẫu hàm Mượn Trả
+├── MuonTra/                       # Thư mục module hóa giao dịch mượn trả
+│   ├── MuonTra_Core.cpp           # Khởi tạo, giải phóng DSLK mượn trả
+│   ├── MuonTra_Muon.cpp           # Nghiệp vụ mượn sách (bẫy 3 điều kiện)
+│   ├── MuonTra_Tra.cpp            # Nghiệp vụ trả sách / báo mất sách
+│   ├── MuonTra_LietKe.cpp         # Liệt kê sách đang mượn của độc giả
+│   └── MuonTra_QuaHan.cpp         # Lọc danh sách độc giả quá hạn 7 ngày
+│
+├── ── PHÂN HỆ ĐỨC (ĐẦU SÁCH, DMS, UI & DATE) ─────────────────────────────
+├── DauSach.h                      # Khai báo nguyên mẫu hàm Đầu sách
+├── DauSach/                       # Thư mục module hóa mảng con trỏ đầu sách
+│   ├── DauSach_Core.cpp           # Khởi tạo, giải phóng mảng con trỏ
+│   ├── DauSach_Them.cpp           # Chèn đầu sách giữ thứ tự tăng dần theo tên
+│   ├── DauSach_TimKiem.cpp        # Tìm kiếm sách theo tên, tìm nhị phân theo ISBN
+│   ├── DauSach_TheLoai.cpp        # Lọc danh sách đầu sách theo thể loại
+│   ├── DauSach_Top10.cpp          # Thống kê Top 10 sách mượn nhiều nhất
+│   └── DauSach_File.cpp           # Đọc / Ghi file DauSach.txt
+├── DanhMucSach.h                  # Khai báo nguyên mẫu hàm Danh mục sách
+├── DanhMucSach/                   # Thư mục module hóa DSLK danh mục sách con
+│   ├── DanhMucSach_Core.cpp       # Khởi tạo, giải phóng DSLK sách con
+│   ├── DanhMucSach_MaSach.cpp     # Đánh mã sách tự động [ISBN]_[STT]
+│   ├── DanhMucSach_Them.cpp       # Thêm sách con vào danh mục
+│   └── DanhMucSach_TrangThai.cpp  # Cập nhật trạng thái sách (0, 1, 2)
+├── Date.h                         # Khai báo hàm xử lý ngày tháng
+├── Date/                          # Thư mục xử lý ngày tháng
+│   ├── Date_Core.cpp              # Lấy ngày hệ thống, kiểm tra ngày hợp lệ (năm nhuận)
+│   └── Date_KhoangCach.cpp        # Tính khoảng cách số ngày giữa 2 mốc Date
+├── UI.h                           # Khai báo đồ họa console & bảng phân trang
+├── UI/                            # Thư mục giao diện console
+│   ├── UI_Console.cpp             # Xóa màn hình, gotoxy, màu sắc, vẽ box
+│   ├── UI_Menu.cpp                # Menu điều hướng bằng phím mũi tên
+│   └── UI_Table.cpp               # Bảng hiển thị phân trang chống tràn màn hình
+│
 ├── Data/                          # Thư mục lưu trữ file dữ liệu (DocGia.txt, DauSach.txt)
 └── main.cpp                       # Điểm khởi chạy, menu điều hướng và giải phóng bộ nhớ
 ```
@@ -67,8 +106,8 @@ QuanLyThuVien/
 
 ### 2. Biên dịch bằng dòng lệnh (g++ MinGW)
 ```bash
-# Biên dịch tất cả các file nguồn
-g++ -std=c++11 main.cpp DauSach.cpp DanhMucSach.cpp DocGia.cpp MuonTra.cpp UI.cpp Date.cpp -o QuanLyThuVien.exe
+# Biên dịch tất cả các file nguồn (theo kiến trúc thư mục module hóa)
+g++ -std=c++11 main.cpp DauSach/*.cpp DanhMucSach/*.cpp DocGia/*.cpp MuonTra/*.cpp UI/*.cpp Date/*.cpp -o QuanLyThuVien.exe
 
 # Chạy chương trình
 ./QuanLyThuVien.exe
