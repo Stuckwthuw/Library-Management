@@ -4,7 +4,7 @@
 
 ## Bản lõi phần Đức (PR đầu tiên)
 
-Các API trong `DauSach.h`, `DanhMucSach.h`, `Date.h` triển khai phần cốt lõi Đ1–Đ6: mảng con trỏ tăng theo tên, DSLK danh mục, mã `ISBN_STT`, tìm kiếm ISBN/tên, gom thể loại, Top 10 và ngày tháng. Đây là thư viện hàm để ghép với UI và module của Hiếu; các mục d/e/j trả dữ liệu cho lớp hiển thị. Giao diện, nhập liệu console, đọc/ghi file (Đ7–Đ8) và chương trình hoàn chỉnh sẽ ở PR sau.
+Các API trong `DauSach.h`, `DanhMucSach.h`, `Date.h` triển khai phần cốt lõi Đ1–Đ6: mảng con trỏ tăng theo tên, DSLK danh mục, mã `ISBN_STT`, tìm kiếm ISBN/tên, gom thể loại, Top 10 và ngày tháng. Đây là thư viện hàm để ghép với UI và module của Hiếu; các mục d/e/j trả dữ liệu cho lớp hiển thị. Đã bổ sung đọc/ghi file đầu sách và module lưu trữ độc giả theo định dạng một dòng bên dưới. Giao diện, nhập liệu console và chương trình hoàn chỉnh sẽ ở PR sau.
 
 `CauTruc.h` giữ nguyên. Không dùng container STL hoặc `std::sort`. QuickSort tự cài trong `DauSach/DauSach_NoiBo.h`; mảng tạm cấp phát bằng `new[]`, được `unique_ptr<T[]>` thu hồi tự động bằng `delete[]`.
 
@@ -38,6 +38,40 @@ Các danh sách đầu vào cần được khởi tạo và có liên kết hợ
 
 ---
 
+
+## Đọc/ghi file một dòng
+
+`DauSach/DauSach_File.cpp`, `DocGia/DocGia_File.cpp` và `FileUtils.h` dùng file UTF-8, mỗi file một dòng, các trường phân cách bằng ` | `. Chỉ đọc định dạng này; file nhiều dòng cũ và `DOCGIA_V1` bị từ chối. Dấu `|` trong nội dung được lưu thành `%7C`, dấu `%` thành `%25`; khi đọc sẽ giải mã lại. Khoảng trắng quanh trường được bỏ khi đọc.
+
+Ví dụ một đầu sách có một cuốn sẵn sàng cho mượn:
+
+```text
+DAUSACH_V1 | 1 | CS101 | Cấu trúc dữ liệu | 300 | Nguyễn Văn An | 2025 | Tin học | 1 | CS101_1 | 0 | Kệ A1
+```
+
+Thứ tự: phiên bản, số đầu sách; với mỗi đầu sách: ISBN, tên, số trang, tác giả, năm, thể loại, số cuốn; với mỗi cuốn: mã, trạng thái, vị trí.
+
+Ví dụ một độc giả chưa có lịch sử mượn, mã lớn nhất từng cấp là 5:
+
+```text
+DOCGIA_V2 | 5 | 1 | 1 | Nguyễn Văn | Bình | Nam | 1 | 0 | 0
+```
+
+Thứ tự: phiên bản, mã lớn nhất từng cấp, số độc giả; với mỗi độc giả theo NLR: mã, họ, tên, phái, trạng thái thẻ, số lượt mượn; với mỗi lượt: mã cuốn, ngày mượn `d m y`, ngày trả `d m y`, trạng thái lượt. Cuối file: số lượt lưu trữ từ thẻ đã xóa, tiếp theo là các lượt cùng cấu trúc. Ngày trả khi đang mượn là `0 0 0`.
+
+File được ghi qua `.tmp` rồi thay thế; đọc vào dữ liệu tạm, chỉ thay dữ liệu hiện có khi hợp lệ. Hai file chưa được lưu như một giao dịch chung. Sau khi nạp cả hai, gọi `kiemTraLienKetMuonTra` để kiểm tra trạng thái và liên kết cuốn sách.
+
+Module lưu trữ độc giả cần `themDocGia` từ phân hệ Hiếu khi tích hợp. Bộ kiểm thử dưới đây cung cấp bộ nối BST riêng chỉ dành cho test; không đưa file test vào chương trình chính. Không sửa `CauTruc.h` hoặc đưa UI vào commit này.
+
+```powershell
+$modules = Get-ChildItem DauSach,DanhMucSach,Date,DocGia -Filter '*.cpp' | ForEach-Object { $_.FullName }
+g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 DauSach/tests/kiem_thu_file.cpp $modules -o kiem_thu_file.exe
+New-Item -ItemType Directory -Force .test-run | Out-Null
+Push-Location .test-run
+try { & ..\kiem_thu_file.exe } finally { Pop-Location }
+```
+
+Kiểm thử gồm UTF-8, ký tự `|`/`%`, đọc lại đúng dữ liệu, cấu trúc BST NLR, lịch sử thẻ đã xóa, file rỗng, thiếu/thừa trường và từ chối file cũ mà vẫn giữ dữ liệu đang có.
 
 ## 👥 THÀNH VIÊN NHÓM & PHÂN CHIA CÔNG VIỆC
 

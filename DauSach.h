@@ -38,3 +38,7 @@ bool thongKeLuotMuon(const DanhSachDauSach &ds, const NodeDocGia *root,
                     ThongKeSach *ketQua, int sucChua);
 int layTop10(const DanhSachDauSach &ds, const NodeDocGia *root,
              ThongKeSach *ketQua, int sucChua);
+
+// File UTF-8 một dòng phân cách bằng |; đọc lỗi thì giữ danh sách đang có.
+bool ghiDauSach(const DanhSachDauSach &ds, const char *path);
+bool docDauSach(DanhSachDauSach &ds, const char *path);
