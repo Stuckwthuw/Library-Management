@@ -8,7 +8,7 @@ using namespace std;
 
 // ============================================================================
 // PHÂN HỆ: GIAO DỊCH MƯỢN TRẢ
-// FILE: MuonTra_QuaHan.cpp — Chức năng (i): Danh sách độc giả quá hạn
+// FILE: MuonTra_QuaHan.cpp — Chức năng (i): Danh sách độc giả quá hạn (Ghép nối Date)
 // PHỤ TRÁCH: LÊ VĂN HOÀNG HIẾU (N24DECE018)
 // ============================================================================
 
@@ -27,11 +27,11 @@ void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, int &count) {
   DemTongSachQuaHan_DuyetCay(root->pLeft, count);
 
   // Xử lý node hiện tại: duyệt DSLK mượn trả của độc giả này
-  Date homNay = LayNgayHienTai_Stub();
+  Date homNay = LayNgayHienTai();
   NodeMuonTra *pCurr = root->data.dsMuonTra;
   while (pCurr != nullptr) {
     if (pCurr->data.trangThai == 0) { // Đang mượn
-      int soNgayMuon = TinhKhoangCachNgay_Stub(pCurr->data.ngayMuon, homNay);
+      int soNgayMuon = TinhKhoangCachNgay(pCurr->data.ngayMuon, homNay);
       if (soNgayMuon > MAX_NGAY_MUON)
         count++; // Quá hạn → đếm
     }
@@ -63,11 +63,11 @@ void NapDanhSachQuaHan(TREE_DocGia root, QuaHanInfo arr[], int &index) {
   NapDanhSachQuaHan(root->pLeft, arr, index);
 
   // Xử lý node hiện tại
-  Date homNay = LayNgayHienTai_Stub();
+  Date homNay = LayNgayHienTai();
   NodeMuonTra *pCurr = root->data.dsMuonTra;
   while (pCurr != nullptr) {
     if (pCurr->data.trangThai == 0) { // Đang mượn
-      int soNgayMuon = TinhKhoangCachNgay_Stub(pCurr->data.ngayMuon, homNay);
+      int soNgayMuon = TinhKhoangCachNgay(pCurr->data.ngayMuon, homNay);
       if (soNgayMuon > MAX_NGAY_MUON) {
         // Nạp thông tin quá hạn vào mảng
         arr[index].maThe = root->data.maThe;
@@ -200,7 +200,6 @@ void InDanhSachDocGiaQuaHan(TREE_DocGia root) {
   printf("Tong cong: %d luot muon qua han.\n", index);
 
   // ── Bước 6: Giải phóng mảng — Đi đôi với new ở Bước 2 ──
-  // Chống Memory Leak: Mỗi new phải có delete tương ứng
   delete[] arr;
   arr = nullptr; // Chống Dangling Pointer
 }
