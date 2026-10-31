@@ -24,6 +24,13 @@ using namespace std;
 // Lưu ý: Không xóa node giao dịch để bảo toàn lịch sử phục vụ Top 10 của Đức.
 bool TraSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
              const char *maSach) {
+  // Bẫy lỗi định dạng mã sách [ISBN]_[STT]
+  if (!KiemTraDinhDangMaSach(maSach)) {
+    cout << "[LOI] Ma sach \"" << (maSach ? maSach : "")
+         << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n";
+    return false;
+  }
+
   // Bước 1: Tìm độc giả trên cây BST
   NodeDocGia *pDG = TimKiemDocGia(root, maThe);
   if (pDG == nullptr) {
@@ -69,6 +76,13 @@ bool TraSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
 //   - Sách bên DMS của Đức chuyển sang trangThai = 2 (Thanh lý)
 bool BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
                 const char *maSach) {
+  // Bẫy lỗi định dạng mã sách [ISBN]_[STT]
+  if (!KiemTraDinhDangMaSach(maSach)) {
+    cout << "[LOI] Ma sach \"" << (maSach ? maSach : "")
+         << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n";
+    return false;
+  }
+
   NodeDocGia *pDG = TimKiemDocGia(root, maThe);
   if (pDG == nullptr) {
     cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";

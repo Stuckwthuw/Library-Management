@@ -26,6 +26,13 @@ using namespace std;
 //   7. Cập nhật trạng thái sách bên DMS sang 1 (đã mượn - gọi API Đức: capNhatTrangThaiSach) → O(1)
 bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
               const char *maSach) {
+  // ── Bẫy lỗi định dạng mã sách [ISBN]_[STT] ──
+  if (!KiemTraDinhDangMaSach(maSach)) {
+    cout << "[LOI] Ma sach \"" << (maSach ? maSach : "")
+         << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n";
+    return false;
+  }
+
   // ── Bước 1: Tìm độc giả trên cây BST ──
   NodeDocGia *pDG = TimKiemDocGia(root, maThe);
   if (pDG == nullptr) {

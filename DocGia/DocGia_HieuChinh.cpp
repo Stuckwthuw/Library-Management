@@ -28,6 +28,16 @@ bool HieuChinhDocGia(TREE_DocGia root, int maThe, const char *ho,
     return false;
   }
 
+  // Bẫy lỗi họ tên mới: không được chứa chữ số hoặc ký tự đặc biệt
+  if (!KiemTraChuCaiVaKhoangTrang(ho)) {
+    cout << "[LOI] Ho moi khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
+    return false;
+  }
+  if (!KiemTraChuCaiVaKhoangTrang(ten)) {
+    cout << "[LOI] Ten moi khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
+    return false;
+  }
+
   // Cập nhật các trường được phép thay đổi (bảo toàn maThe)
   strncpy(pDG->data.ho, ho, sizeof(pDG->data.ho) - 1);
   strncpy(pDG->data.ten, ten, sizeof(pDG->data.ten) - 1);

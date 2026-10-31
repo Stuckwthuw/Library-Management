@@ -1,6 +1,7 @@
 #include "../DocGia.h"
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 
@@ -75,6 +76,7 @@ void ChuanHoaKhoangTrang(char *s) {
 //   - Chữ cái đầu tiên của mỗi từ được VIẾT HOA.
 //   - Các chữ cái còn lại trong từ được viết thường.
 //   - Loại bỏ toàn bộ khoảng trắng thừa (gọi ChuanHoaKhoangTrang trước).
+//   - An toàn tuyệt đối với chuỗi UTF-8 tiếng Việt (không làm hỏng byte >= 128).
 // Ví dụ: "   ngUYEn   vAN   a  " -> "Nguyen Van A"
 void DinhDangHoTen(char *s) {
   if (s == nullptr)
@@ -86,15 +88,19 @@ void DinhDangHoTen(char *s) {
 
   bool newWord = true; // Cờ đánh dấu bắt đầu một từ mới
   for (int i = 0; s[i] != '\0'; i++) {
-    if (isspace((unsigned char)s[i])) {
+    unsigned char c = (unsigned char)s[i];
+    if (isspace(c)) {
       newWord = true;
-    } else {
+    } else if (c < 128) {
       if (newWord) {
-        s[i] = (char)toupper((unsigned char)s[i]);
+        s[i] = (char)toupper(c);
         newWord = false;
       } else {
-        s[i] = (char)tolower((unsigned char)s[i]);
+        s[i] = (char)tolower(c);
       }
+    } else {
+      // Byte UTF-8 tiếng Việt (>= 128): bảo toàn nguyên vẹn
+      newWord = false;
     }
   }
 }
@@ -115,6 +121,102 @@ void ChuanHoaMa(char *s) {
     i++;
   }
   s[j] = '\0';
+}
+
+// [HÀM PHÂN TÍCH LỖI HỌ TÊN]
+// Mục đích: Kiểm tra tính hợp lệ của chuỗi Họ hoặc Tên theo quy chuẩn môn học và nghiệp vụ thư viện:
+//   - Không được để trống hoặc chỉ có dấu cách.
+//   - Cho phép chữ cái Latin (a-z, A-Z) và tiếng Việt UTF-8 (ký tự đa byte >= 128).
+//   - Cho phép dấu cách giữa các từ (cho họ có đệm, hoặc tên 2 chữ như "Anh Thư").
+//   - TUYỆT ĐỐI KHÔNG CHỨA CHỮ SỐ (0-9) VÀ KÝ TỰ ĐẶC BIỆT (!@#$%...).
+// Trả về:
+//   0 = Hoàn toàn hợp lệ.
+//   1 = Chuỗi rỗng.
+//   2 = Chứa chữ số (0-9), gán ký tự số vào kyTuViPham để thông báo trực quan.
+//   3 = Chứa ký tự đặc biệt, gán ký tự đó vào kyTuViPham.
+//   4 = Không chứa bất kỳ chữ cái nào.
+int KiemTraLoiHoTen(const char *s, char &kyTuViPham) {
+  kyTuViPham = '\0';
+  if (s == nullptr || KiemTraChuoiRong(s))
+    return 1; // Rỗng
+
+  bool coChuCai = false;
+  for (int i = 0; s[i] != '\0'; i++) {
+    unsigned char c = (unsigned char)s[i];
+    if (c >= 128) {
+      // Byte đa byte UTF-8 tiếng Việt hợp lệ (á, à, ả, ã, ạ, đ, ...)
+      coChuCai = true;
+    } else if (isalpha(c)) {
+      // Ký tự chữ cái Latin (A-Z, a-z)
+      coChuCai = true;
+    } else if (c == ' ') {
+      // Khoảng trắng hợp lệ giữa các từ
+      continue;
+    } else if (isdigit(c)) {
+      // Bẫy lỗi: Chứa chữ số (ví dụ: "Lê 1", "An 123")
+      kyTuViPham = (char)c;
+      return 2;
+    } else {
+      // Bẫy lỗi: Chứa ký tự đặc biệt (ví dụ: "Lê @#", "Trần_Văn")
+      kyTuViPham = (char)c;
+      return 3;
+    }
+  }
+
+  if (!coChuCai)
+    return 4; // Toàn ký tự không hợp lệ
+
+  return 0; // Hợp lệ
+}
+
+// [HÀM KIỂM TRA CHỈ CHỨA CHỮ CÁI VÀ KHOẢNG TRẮNG]
+// Mục đích: Trả về true nếu họ hoặc tên hợp lệ, false nếu chứa số hoặc ký tự lạ.
+bool KiemTraChuCaiVaKhoangTrang(const char *s) {
+  char dummy = '\0';
+  return (KiemTraLoiHoTen(s, dummy) == 0);
+}
+
+// [HÀM KIỂM TRA ĐỊNH DẠNG MÃ SÁCH CON]
+// Mục đích: Xác thực mã sách có đúng cấu trúc [ISBN]_[STT] để tương thích với API Danh Mục Sách.
+// Quy tắc:
+//   - Phải có đúng ký tự '_' phân cách giữa ISBN và số thứ tự bản sao sách.
+//   - Phần ISBN trước dấu '_' không được rỗng và không chứa khoảng trắng.
+//   - Phần STT sau dấu '_' phải là số nguyên dương >= 1 (toàn chữ số 0-9).
+// Ví dụ đúng: "CS101_1", "TOAN_12"
+// Ví dụ sai:  "CS101" (quên _), "_1" (thiếu ISBN), "CS101_" (thiếu STT), "CS101_0" (STT < 1)
+bool KiemTraDinhDangMaSach(const char *maSach) {
+  if (maSach == nullptr || maSach[0] == '\0')
+    return false;
+
+  const char *underscore = strchr(maSach, '_');
+  if (underscore == nullptr)
+    return false; // Thiếu dấu '_' phân cách
+
+  // Phần ISBN trước dấu '_' phải có ít nhất 1 ký tự và không chứa khoảng trắng
+  if (underscore == maSach)
+    return false; // Rỗng phần ISBN
+
+  for (const char *p = maSach; p < underscore; p++) {
+    if (isspace((unsigned char)*p))
+      return false; // ISBN không được có khoảng trắng
+  }
+
+  // Phần STT sau dấu '_' phải có ít nhất 1 ký tự và toàn là số
+  const char *sttStr = underscore + 1;
+  if (*sttStr == '\0')
+    return false; // Rỗng phần số thứ tự
+
+  for (int i = 0; sttStr[i] != '\0'; i++) {
+    if (!isdigit((unsigned char)sttStr[i]))
+      return false; // STT chứa ký tự không phải chữ số
+  }
+
+  // STT phải >= 1
+  int sttVal = atoi(sttStr);
+  if (sttVal <= 0)
+    return false;
+
+  return true;
 }
 
 // [HÀM SO SÁNH CHUỖI CON KHÔNG PHÂN BIỆT HOA THƯỜNG]

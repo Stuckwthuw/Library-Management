@@ -19,6 +19,16 @@ bool ThemDocGia(TREE_DocGia &root, TheDocGia dg) {
   DinhDangHoTen(dg.ho);
   DinhDangHoTen(dg.ten);
 
+  // Bẫy lỗi nghiệp vụ: Họ tên không được rỗng, không chứa chữ số hoặc ký tự đặc biệt
+  if (!KiemTraChuCaiVaKhoangTrang(dg.ho)) {
+    cout << "[LOI] Ho va ten dem khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
+    return false;
+  }
+  if (!KiemTraChuCaiVaKhoangTrang(dg.ten)) {
+    cout << "[LOI] Ten doc gia khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
+    return false;
+  }
+
   if (root == nullptr) {
     // Tìm được vị trí lá trống phù hợp, tiến hành cấp phát node mới
     NodeDocGia *pNew = new NodeDocGia;

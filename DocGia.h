@@ -30,6 +30,27 @@ void DinhDangHoTen(char *s);
 // Ví dụ: "  cs101_1  " -> "CS101_1"
 void ChuanHoaMa(char *s);
 
+// [HÀM PHÂN TÍCH LỖI HỌ TÊN]
+// Mục đích: Kiểm tra chuỗi họ hoặc tên có chứa chữ số (0-9) hay ký tự đặc biệt (!@#$...) không.
+// Hỗ trợ tiếng Việt có dấu UTF-8 và cho phép khoảng trắng giữa các từ.
+// Trả về: 
+//   0 = Hợp lệ.
+//   1 = Chuỗi rỗng hoặc chỉ toàn khoảng trắng.
+//   2 = Chứa chữ số (0-9), lưu ký tự vi phạm vào kyTuViPham.
+//   3 = Chứa ký tự đặc biệt, lưu ký tự vi phạm vào kyTuViPham.
+//   4 = Chuỗi không chứa chữ cái nào.
+int KiemTraLoiHoTen(const char *s, char &kyTuViPham);
+
+// [HÀM KIỂM TRA CHỈ CHỨA CHỮ CÁI VÀ KHOẢNG TRẮNG]
+// Mục đích: Xác thực nhanh họ tên độc giả (chấp nhận chữ cái Latin, tiếng Việt và khoảng trắng).
+// Bẫy lỗi: Chặn triệt để chữ số (0-9) và ký tự đặc biệt.
+bool KiemTraChuCaiVaKhoangTrang(const char *s);
+
+// [HÀM KIỂM TRA ĐỊNH DẠNG MÃ SÁCH CON]
+// Mục đích: Kiểm tra mã sách mượn có tuân thủ đúng cấu trúc [ISBN]_[STT] hay không.
+// Ví dụ hợp lệ: "CS101_1", "TH01_12". Ví dụ sai: "CS101" (thiếu _), "_1", "CS101_abc".
+bool KiemTraDinhDangMaSach(const char *maSach);
+
 // [HÀM KIỂM TRA CHỨA CHUỖI CON KHÔNG PHÂN BIỆT HOA THƯỜNG]
 // Mục đích: Dùng cho tra cứu tìm kiếm: so sánh chuỗi không phân biệt ký tự hoa/thường.
 bool ChuaChuoiConKhongPhanBietHoaThuong(const char *str, const char *subStr);

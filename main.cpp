@@ -48,6 +48,22 @@ void XoaBoDemCin() {
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
+// [HÀM NHẬP CHUỖI AN TOÀN CHỐNG TRÀN BỘ ĐỆM]
+// Đọc chuỗi tối đa maxLen ký tự (kể cả '\0'). Nếu người dùng gõ vượt quá độ dài,
+// tự động dọn dẹp cờ failbit và loại bỏ ký tự thừa còn lại trong luồng cin.
+void NhapChuoiAnToan(char *buf, int maxLen, const char *prompt = nullptr) {
+  if (prompt != nullptr && prompt[0] != '\0') {
+    cout << prompt;
+  }
+  cin.getline(buf, maxLen);
+  if (cin.fail()) {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cout << "  [CANH BAO] Do dai nhap vuot qua toi da " << (maxLen - 1)
+         << " ky tu, he thong da tu dong cat ngan chuoi!\n";
+  }
+}
+
 // [HÀM NHẬP SỐ NGUYÊN AN TOÀN]
 // Bẫy lỗi nhập ký tự chữ/dấu, kiểm tra giới hạn minVal - maxVal, chống trôi lệnh.
 bool NhapSoNguyenAnToan(int &val, int minVal, int maxVal, const char *prompt) {
@@ -86,22 +102,64 @@ void ChucNang_ThemDocGia(TREE_DocGia &root) {
   dg.maThe = SinhMaTheTuDong(root);
   cout << "-> Ma the tu dong cap: " << dg.maThe << "\n";
 
-  // Nhập họ và tên đệm với auto-trim và Title Case
-  cout << "Nhap ho va ten dem: ";
-  cin.getline(dg.ho, sizeof(dg.ho));
-  DinhDangHoTen(dg.ho);
-  if (KiemTraChuoiRong(dg.ho)) {
-    cout << "[LOI] Ho khong duoc de trong!\n";
-    return;
+  // Nhập họ và tên đệm với loop-until-valid (chặn số 0-9, chặn ký tự đặc biệt)
+  while (true) {
+    cout << "Nhap ho va ten dem (Enter de huy): ";
+    NhapChuoiAnToan(dg.ho, sizeof(dg.ho));
+    if (strlen(dg.ho) == 0) {
+      cout << "Da huy thao tac them doc gia.\n";
+      return;
+    }
+    char kyTuLoi = '\0';
+    int maLoi = KiemTraLoiHoTen(dg.ho, kyTuLoi);
+    if (maLoi == 1) {
+      cout << "  [LOI] Ho va ten dem khong duoc de trong! Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 2) {
+      cout << "  [LOI] Ho va ten dem chi duoc chua chu cai, khong duoc chua chu so '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 3) {
+      cout << "  [LOI] Ho va ten dem khong duoc chua ky tu dac biet '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 4) {
+      cout << "  [LOI] Ho va ten dem phai chua it nhat mot chu cai! Vui long nhap lai.\n";
+      continue;
+    }
+    DinhDangHoTen(dg.ho);
+    break;
   }
 
-  // Nhập tên với auto-trim và Title Case
-  cout << "Nhap ten: ";
-  cin.getline(dg.ten, sizeof(dg.ten));
-  DinhDangHoTen(dg.ten);
-  if (KiemTraChuoiRong(dg.ten)) {
-    cout << "[LOI] Ten khong duoc de trong!\n";
-    return;
+  // Nhập tên với loop-until-valid (cho phép tên 2 từ, chặn số 0-9 và ký tự đặc biệt)
+  while (true) {
+    cout << "Nhap ten: ";
+    NhapChuoiAnToan(dg.ten, sizeof(dg.ten));
+    char kyTuLoi = '\0';
+    int maLoi = KiemTraLoiHoTen(dg.ten, kyTuLoi);
+    if (maLoi == 1) {
+      cout << "  [LOI] Ten khong duoc de trong! Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 2) {
+      cout << "  [LOI] Ten chi duoc chua chu cai, khong duoc chua chu so '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 3) {
+      cout << "  [LOI] Ten khong duoc chua ky tu dac biet '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 4) {
+      cout << "  [LOI] Ten phai chua it nhat mot chu cai! Vui long nhap lai.\n";
+      continue;
+    }
+    DinhDangHoTen(dg.ten);
+    break;
   }
 
   // Chọn phái với bẫy lỗi số nguyên
@@ -171,12 +229,15 @@ void ChucNang_TraCuuDocGia(TREE_DocGia root) {
     cout << "=============================================================\n";
   } else {
     char tuKhoa[100];
-    cout << "Nhap ten hoac ho ten can tim: ";
-    cin.getline(tuKhoa, sizeof(tuKhoa));
-    ChuanHoaKhoangTrang(tuKhoa);
-    if (KiemTraChuoiRong(tuKhoa)) {
-      cout << "[LOI] Tu khoa tim kiem khong duoc de trong!\n";
-      return;
+    while (true) {
+      cout << "Nhap ten hoac ho ten can tim (Enter de huy): ";
+      NhapChuoiAnToan(tuKhoa, sizeof(tuKhoa));
+      ChuanHoaKhoangTrang(tuKhoa);
+      if (strlen(tuKhoa) == 0) {
+        cout << "Da huy tra cuu.\n";
+        return;
+      }
+      break;
     }
 
     TheDocGia *ketQua[500];
@@ -232,17 +293,61 @@ void ChucNang_HieuChinhDocGia(TREE_DocGia root) {
   char hoMoi[50], tenMoi[20], phaiMoi[5];
   int ttMoi = pDG->data.trangThai;
 
-  cout << "Nhap ho moi (Enter de giu nguyen): ";
-  cin.getline(hoMoi, sizeof(hoMoi));
-  DinhDangHoTen(hoMoi);
-  if (strlen(hoMoi) == 0)
-    strcpy(hoMoi, pDG->data.ho);
+  // Hiệu chỉnh Họ mới với bẫy lỗi chữ số và ký tự đặc biệt
+  while (true) {
+    cout << "Nhap ho moi (Enter de giu nguyen): ";
+    NhapChuoiAnToan(hoMoi, sizeof(hoMoi));
+    if (strlen(hoMoi) == 0) {
+      strcpy(hoMoi, pDG->data.ho);
+      break;
+    }
+    char kyTuLoi = '\0';
+    int maLoi = KiemTraLoiHoTen(hoMoi, kyTuLoi);
+    if (maLoi == 2) {
+      cout << "  [LOI] Ho moi chi duoc chua chu cai, khong duoc chua chu so '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 3) {
+      cout << "  [LOI] Ho moi khong duoc chua ky tu dac biet '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 4) {
+      cout << "  [LOI] Ho moi phai chua it nhat mot chu cai! Vui long nhap lai.\n";
+      continue;
+    }
+    DinhDangHoTen(hoMoi);
+    break;
+  }
 
-  cout << "Nhap ten moi (Enter de giu nguyen): ";
-  cin.getline(tenMoi, sizeof(tenMoi));
-  DinhDangHoTen(tenMoi);
-  if (strlen(tenMoi) == 0)
-    strcpy(tenMoi, pDG->data.ten);
+  // Hiệu chỉnh Tên mới với bẫy lỗi chữ số và ký tự đặc biệt (cho phép tên 2 từ)
+  while (true) {
+    cout << "Nhap ten moi (Enter de giu nguyen): ";
+    NhapChuoiAnToan(tenMoi, sizeof(tenMoi));
+    if (strlen(tenMoi) == 0) {
+      strcpy(tenMoi, pDG->data.ten);
+      break;
+    }
+    char kyTuLoi = '\0';
+    int maLoi = KiemTraLoiHoTen(tenMoi, kyTuLoi);
+    if (maLoi == 2) {
+      cout << "  [LOI] Ten moi chi duoc chua chu cai, khong duoc chua chu so '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 3) {
+      cout << "  [LOI] Ten moi khong duoc chua ky tu dac biet '"
+           << kyTuLoi << "'!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    if (maLoi == 4) {
+      cout << "  [LOI] Ten moi phai chua it nhat mot chu cai! Vui long nhap lai.\n";
+      continue;
+    }
+    DinhDangHoTen(tenMoi);
+    break;
+  }
 
   int chonPhai;
   if (!NhapSoNguyenAnToan(chonPhai, 0, 2, "Chon phai (1. Nam | 2. Nu | 0. Giu nguyen): ")) {
@@ -560,13 +665,20 @@ void ChucNang_MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
        << " cuon\n";
 
   char maSach[20];
-  cout << "Nhap ma sach can muon (VD: CS101_1): ";
-  cin.getline(maSach, sizeof(maSach));
-  ChuanHoaMa(maSach);
-
-  if (KiemTraChuoiRong(maSach)) {
-    cout << "[LOI] Ma sach khong duoc de trong!\n";
-    return;
+  while (true) {
+    cout << "Nhap ma sach can muon (VD: CS101_1, Enter de huy): ";
+    NhapChuoiAnToan(maSach, sizeof(maSach));
+    ChuanHoaMa(maSach);
+    if (strlen(maSach) == 0) {
+      cout << "Da huy giao dich muon sach.\n";
+      return;
+    }
+    if (!KiemTraDinhDangMaSach(maSach)) {
+      cout << "  [LOI] Ma sach \"" << maSach
+           << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    break;
   }
 
   // Tra cứu xem sách có tồn tại và hiển thị trước khi xác nhận
@@ -607,13 +719,20 @@ void ChucNang_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
        << " (Ma: " << maThe << ")\n";
 
   char maSach[20];
-  cout << "Nhap ma sach can tra: ";
-  cin.getline(maSach, sizeof(maSach));
-  ChuanHoaMa(maSach);
-
-  if (KiemTraChuoiRong(maSach)) {
-    cout << "[LOI] Ma sach khong duoc de trong!\n";
-    return;
+  while (true) {
+    cout << "Nhap ma sach can tra (VD: CS101_1, Enter de huy): ";
+    NhapChuoiAnToan(maSach, sizeof(maSach));
+    ChuanHoaMa(maSach);
+    if (strlen(maSach) == 0) {
+      cout << "Da huy giao dich tra sach.\n";
+      return;
+    }
+    if (!KiemTraDinhDangMaSach(maSach)) {
+      cout << "  [LOI] Ma sach \"" << maSach
+           << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    break;
   }
 
   if (!XacNhanHanhDong("Xac nhan tra cuon sach nay ve thu vien?")) {
@@ -646,13 +765,20 @@ void ChucNang_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
        << " (Ma: " << maThe << ")\n";
 
   char maSach[20];
-  cout << "Nhap ma sach bi mat: ";
-  cin.getline(maSach, sizeof(maSach));
-  ChuanHoaMa(maSach);
-
-  if (KiemTraChuoiRong(maSach)) {
-    cout << "[LOI] Ma sach khong duoc de trong!\n";
-    return;
+  while (true) {
+    cout << "Nhap ma sach bi mat (VD: CS101_1, Enter de huy): ";
+    NhapChuoiAnToan(maSach, sizeof(maSach));
+    ChuanHoaMa(maSach);
+    if (strlen(maSach) == 0) {
+      cout << "Da huy thao tac bao mat sach.\n";
+      return;
+    }
+    if (!KiemTraDinhDangMaSach(maSach)) {
+      cout << "  [LOI] Ma sach \"" << maSach
+           << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n  Vui long nhap lai.\n";
+      continue;
+    }
+    break;
   }
 
   cout << "[CANH BAO] Sach se chuyen sang trang thai THANH LY va khong the cho muon tiep!\n";
