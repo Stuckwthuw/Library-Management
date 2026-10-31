@@ -1,7 +1,77 @@
 # ĐỒ ÁN CẤU TRÚC DỮ LIỆU & GIẢI THUẬT
 ## ĐỀ TÀI: QUẢN LÝ THƯ VIỆN (C++)
 
+
+## Bản lõi phần Đức (PR đầu tiên)
+
+Các API trong `DauSach.h`, `DanhMucSach.h`, `Date.h` triển khai phần cốt lõi Đ1–Đ6: mảng con trỏ tăng theo tên, DSLK danh mục, mã `ISBN_STT`, tìm kiếm ISBN/tên, gom thể loại, Top 10 và ngày tháng. Đây là thư viện hàm để ghép với UI và module của Hiếu; các mục d/e/j trả dữ liệu cho lớp hiển thị. Đã bổ sung đọc/ghi file đầu sách và module lưu trữ độc giả theo định dạng một dòng bên dưới. Giao diện, nhập liệu console và chương trình hoàn chỉnh sẽ ở PR sau.
+
+`CauTruc.h` giữ nguyên. Không dùng container STL hoặc `std::sort`. QuickSort tự cài trong `DauSach/DauSach_NoiBo.h`; mảng tạm cấp phát bằng `new[]`, được `unique_ptr<T[]>` thu hồi tự động bằng `delete[]`.
+
+### Kiểm thử độc lập bản lõi (Windows / MinGW, C++11)
+
+Trong PowerShell tại thư mục repository, với `g++` trong PATH:
+
+```powershell
+$modules = Get-ChildItem DauSach,DanhMucSach,Date -Filter '*.cpp' | ForEach-Object { $_.FullName }
+g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 DauSach/tests/kiem_thu_core.cpp $modules -o kiem_thu_core.exe
+.\kiem_thu_core.exe
+```
+
+Kết quả mong đợi: `PASS: DauSach, DMS, tim kiem, the loai, Top10, Date, QuickSort.`
+
+Các ca kiểm thử gồm: danh sách rỗng/đầy, ISBN trùng, tên và ISBN có thứ tự khác nhau, bộ đệm kết quả thiếu, tìm tiếng Việt trên Windows, mã sách vượt độ dài, dãy STT có khoảng trống, trạng thái sai, Top 10 ít/nhiều hơn 10 đầu sách, lượt đang mượn/đã trả/mất, mốc 7/8 ngày, năm nhuận và biên tháng/năm 1901–2101.
+
+### Giao tiếp để ghép module
+
+- `themDauSach`: nhận quyền sở hữu con trỏ và DMS khi thành công; nếu trả `false`, bên gọi vẫn phải quản lý/giải phóng chúng. `giaiPhongDauSach` thu hồi cả đầu sách và các cuốn con.
+- `themBanSao`: sinh mã nối tiếp STT lớn nhất, kiểm tra vừa `maSach[20]`, tạo chuỗi tạm trước khi nối để không để lại dữ liệu dở dang khi lỗi. Giữ cuốn thanh lý trong DMS để không tái sử dụng mã.
+- `timSachTheoMaSach`: trả đầu sách và node DMS cho Hiếu kiểm tra nghiệp vụ; `capNhatTrangThaiSach` chỉ nhận 0/1/2.
+- `timDauSachTheoTen`, `layDauSachTheoTheLoai`: bên gọi cấp mảng ít nhất `ds.n` con trỏ; trả số kết quả hoặc -1 nếu bộ đệm không hợp lệ. Con trỏ kết quả thuộc danh sách gốc. Từ đầu sách có thể lấy đầy đủ ISBN, tên, tác giả, năm, thể loại và duyệt DMS để in mục e.
+- `layTop10`: nhận cây độc giả chỉ đọc; cấp bộ đệm 10 phần tử `ThongKeSach`, nhận tối đa 10 kết quả giảm dần theo số lượt. Hòa lượt thì so tên rồi ISBN. Mọi trạng thái mượn trả đều được đếm; lịch sử phải còn được giữ để thống kê đầy đủ.
+- `khoangCachNgay(tu, den)`: trả số ngày `den - tu`; quá hạn khi lớn hơn `MAX_NGAY_MUON`. `{0,0,0}` chỉ dùng biểu diễn ngày trả chưa có, không tính khoảng cách. Miền ngày hợp lệ 1900–9999.
+- Chuỗi lưu UTF-8, giới hạn mảng `char` tính bằng byte; tìm tên không phân biệt hoa/thường, có phân biệt dấu. ISBN tối đa 14 byte, không chứa khoảng trắng hoặc dấu `_` dành cho phân tách mã.
+
+Mảng chính luôn tăng theo tên. Chỉ mục ISBN phụ xây lại O(N log N) sau thay đổi, các truy vấn tiếp theo O(log N); tìm cuốn trong DMS O(M). Chỉ mục cache một danh sách tại một thời điểm, dùng trong luồng console đơn. Các API thêm/khởi tạo/giải phóng tự vô hiệu cache; nếu bên gọi sửa ISBN/con trỏ trực tiếp, phải gọi `voHieuChiMucISBN()`.
+
+Các danh sách đầu vào cần được khởi tạo và có liên kết hợp lệ (không chu trình); module lõi không quản lý giao dịch mượn/trả. Lỗi đối số của hàm sinh mã/ngày và lỗi cấp phát có thể ném ngoại lệ, bên giao diện xử lý thông báo. Bộ test tạo cây và lịch sử bằng struct để xác nhận đọc dữ liệu, không triển khai module của Hiếu.
+
 ---
+
+
+## Đọc/ghi file một dòng
+
+`DauSach/DauSach_File.cpp`, `DocGia/DocGia_File.cpp` và `FileUtils.h` dùng file UTF-8, mỗi file một dòng, các trường phân cách bằng ` | `. Chỉ đọc định dạng này; file nhiều dòng cũ và `DOCGIA_V1` bị từ chối. Dấu `|` trong nội dung được lưu thành `%7C`, dấu `%` thành `%25`; khi đọc sẽ giải mã lại. Khoảng trắng quanh trường được bỏ khi đọc.
+
+Ví dụ một đầu sách có một cuốn sẵn sàng cho mượn:
+
+```text
+DAUSACH_V1 | 1 | CS101 | Cấu trúc dữ liệu | 300 | Nguyễn Văn An | 2025 | Tin học | 1 | CS101_1 | 0 | Kệ A1
+```
+
+Thứ tự: phiên bản, số đầu sách; với mỗi đầu sách: ISBN, tên, số trang, tác giả, năm, thể loại, số cuốn; với mỗi cuốn: mã, trạng thái, vị trí.
+
+Ví dụ một độc giả chưa có lịch sử mượn, mã lớn nhất từng cấp là 5:
+
+```text
+DOCGIA_V2 | 5 | 1 | 1 | Nguyễn Văn | Bình | Nam | 1 | 0 | 0
+```
+
+Thứ tự: phiên bản, mã lớn nhất từng cấp, số độc giả; với mỗi độc giả theo NLR: mã, họ, tên, phái, trạng thái thẻ, số lượt mượn; với mỗi lượt: mã cuốn, ngày mượn `d m y`, ngày trả `d m y`, trạng thái lượt. Cuối file: số lượt lưu trữ từ thẻ đã xóa, tiếp theo là các lượt cùng cấu trúc. Ngày trả khi đang mượn là `0 0 0`.
+
+File được ghi qua `.tmp` rồi thay thế; đọc vào dữ liệu tạm, chỉ thay dữ liệu hiện có khi hợp lệ. Hai file chưa được lưu như một giao dịch chung. Sau khi nạp cả hai, gọi `kiemTraLienKetMuonTra` để kiểm tra trạng thái và liên kết cuốn sách.
+
+Module lưu trữ độc giả cần `themDocGia` từ phân hệ Hiếu khi tích hợp. Bộ kiểm thử dưới đây cung cấp bộ nối BST riêng chỉ dành cho test; không đưa file test vào chương trình chính. Không sửa `CauTruc.h` hoặc đưa UI vào commit này.
+
+```powershell
+$modules = Get-ChildItem DauSach,DanhMucSach,Date,DocGia -Filter '*.cpp' | ForEach-Object { $_.FullName }
+g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 DauSach/tests/kiem_thu_file.cpp $modules -o kiem_thu_file.exe
+New-Item -ItemType Directory -Force .test-run | Out-Null
+Push-Location .test-run
+try { & ..\kiem_thu_file.exe } finally { Pop-Location }
+```
+
+Kiểm thử gồm UTF-8, ký tự `|`/`%`, đọc lại đúng dữ liệu, cấu trúc BST NLR, lịch sử thẻ đã xóa, file rỗng, thiếu/thừa trường và từ chối file cũ mà vẫn giữ dữ liệu đang có.
 
 ## 👥 THÀNH VIÊN NHÓM & PHÂN CHIA CÔNG VIỆC
 
