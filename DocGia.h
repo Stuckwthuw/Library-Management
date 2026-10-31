@@ -7,6 +7,34 @@
 // NGƯỜI PHỤ TRÁCH: LÊ VĂN HOÀNG HIẾU
 // FILE: DocGia.h - Khai báo các nguyên mẫu hàm (Function Prototypes)
 // ----------------------------------------------------------------------------
+// NHÓM 0: TIỆN ÍCH CHUẨN HÓA CHUỖI & XỬ LÝ DỮ LIỆU NHẬP
+// ----------------------------------------------------------------------------
+
+// [HÀM KIỂM TRA CHUỖI RỖNG]
+// Mục đích: Trả về true nếu chuỗi nullptr hoặc chỉ chứa toàn ký tự khoảng trắng.
+bool KiemTraChuoiRong(const char *s);
+
+// [HÀM CHUẨN HÓA KHOẢNG TRẮNG]
+// Mục đích: Cắt tỉa (trim) khoảng trắng ở đầu và cuối chuỗi,
+// rút gọn nhiều khoảng trắng liên tiếp ở giữa thành đúng 1 khoảng trắng duy nhất.
+void ChuanHoaKhoangTrang(char *s);
+
+// [HÀM ĐỊNH DẠNG TÊN / TITLE CASE]
+// Mục đích: Tự động chuẩn hóa khoảng trắng và viết hoa chữ cái đầu tiên của mỗi từ,
+// các chữ cái còn lại chuyển thành chữ thường.
+// Ví dụ: "   nGuyeN    vAn   a  " -> "Nguyen Van A"
+void DinhDangHoTen(char *s);
+
+// [HÀM CHUẨN HÓA MÃ KÝ HIỆU]
+// Mục đích: Dùng cho ISBN, Mã Sách: xóa toàn bộ khoảng trắng thừa và chuyển thành chữ IN HOA.
+// Ví dụ: "  cs101_1  " -> "CS101_1"
+void ChuanHoaMa(char *s);
+
+// [HÀM KIỂM TRA CHỨA CHUỖI CON KHÔNG PHÂN BIỆT HOA THƯỜNG]
+// Mục đích: Dùng cho tra cứu tìm kiếm: so sánh chuỗi không phân biệt ký tự hoa/thường.
+bool ChuaChuoiConKhongPhanBietHoaThuong(const char *str, const char *subStr);
+
+// ----------------------------------------------------------------------------
 // NHÓM 1: CÁC HÀM CƠ BẢN VÀ QUẢN LÝ BỘ NHỚ TRÊN CÂY BST
 // ----------------------------------------------------------------------------
 
@@ -37,14 +65,18 @@ void GiaiPhongCayDocGia(TREE_DocGia &root);
 
 // [HÀM TÌM KIẾM ĐỘC GIẢ THEO MÃ THẺ]
 // Mục đích: Tìm kiếm một node trong cây BST dựa vào khóa chính maThe.
-// Giải thuật: Tìm kiếm nhị phân trên cây BST (O(log N) trung bình, O(N) tệ
-// nhất).
+// Giải thuật: Tìm kiếm nhị phân trên cây BST (O(log N) trung bình, O(N) tệ nhất).
 NodeDocGia *TimKiemDocGia(TREE_DocGia root, int maThe);
 
 // [HÀM KIỂM TRA MÃ THẺ TỒN TẠI]
 // Mục đích: Kiểm tra nhanh xem maThe đã có trong hệ thống hay chưa.
 // Trả về: true nếu đã tồn tại, false nếu chưa có.
 bool KiemTraMaTheTonTai(TREE_DocGia root, int maThe);
+
+// [HÀM TÌM KIẾM ĐỘC GIẢ THEO TÊN HOẶC HỌ TÊN (KHÔNG PHÂN BIỆT HOA THƯỜNG)]
+// Mục đích: Tìm kiếm toàn bộ độc giả có Họ hoặc Tên chứa từ khóa tìm kiếm.
+// Kết quả được đổ vào mảng con trỏ arr[], trả về số lượng kết quả tìm được.
+int TimKiemDocGiaTheoTen(TREE_DocGia root, const char *tuKhoa, TheDocGia *arr[], int maxKetQua);
 
 // [HÀM SINH MÃ THẺ TỰ ĐỘNG - BỘ SINH ĐỒNG DƯ TUYẾN TÍNH CHU KỲ ĐẦY]
 // Mục đích: Tự động cấp mã thẻ duy nhất, phân bố giả ngẫu nhiên để cây BST
@@ -139,6 +171,6 @@ void InDanhSachDocGia_TheoTenHo(TREE_DocGia root);
 bool GhiFileDocGia(TREE_DocGia root, const char *filePath = "Data/DocGia.txt");
 
 // [HÀM ĐỌC TOÀN BỘ DỮ LIỆU ĐỘC GIẢ TỪ FILE]
-// Mục đích: Phục hồi lại cây BST Thẻ Độc Giả và các DSLK Mượn Trả khi khởi động
+// Mục đích: Phục hồi lại cây BST Thẻ Độc Giả và các DSLK Mượn TrẢ khi khởi động
 // chương trình. Đường dẫn mặc định: "Data/DocGia.txt"
 bool DocFileDocGia(TREE_DocGia &root, const char *filePath = "Data/DocGia.txt");
