@@ -1,13 +1,16 @@
 #include "CauTruc.h"
-#include "DocGia.h"
-#include "MuonTra.h"
-#include "DauSach.h"
 #include "DanhMucSach.h"
 #include "Date.h"
+#include "DauSach.h"
+#include "DocGia.h"
+#include "MuonTra.h"
+#include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <limits>
-#include <cstring>
-#include <cstdio>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 using namespace std;
 
@@ -18,12 +21,10 @@ using namespace std;
 //   - Lê Văn Hoàng Hiếu (N24DECE018) — Thẻ Độc Giả & Mượn Trả
 //   - Lê Anh Đức        (N24DECE012) — Đầu Sách, Danh Mục Sách, Date & Core UI
 // ============================================================================
-// Ghi chú tích hợp UI:
-//   Hiện tại main.cpp sử dụng giao diện dòng lệnh tương tác tiêu chuẩn (CLI Menu).
-//   Khi Đức hoàn thiện phân hệ UI console nâng cao (UI.h, UI_Menu.cpp điều hướng
-//   bằng phím mũi tên và vẽ khung viền), có thể thay thế vòng lặp Menu bằng
-//   hàm của UI mà không cần sửa đổi các hàm gọi nghiệp vụ bên dưới.
-// ============================================================================
+
+// Đường dẫn file lưu trữ chuẩn của dự án
+const char *FILE_DOCGIA  = "Data/DocGia.txt";
+const char *FILE_DAUSACH = "Data/DauSach.txt";
 
 void XoaManHinh() {
 #ifdef _WIN32
@@ -51,7 +52,7 @@ void ChucNang_ThemDocGia(TREE_DocGia &root) {
   cout << "\n--- [A]. THEM THE DOC GIA MOI ---\n";
   TheDocGia dg;
   dg.maThe = SinhMaTheTuDong(root);
-  cout << "-> Ma the tu dong cap (LCG chu ky day): " << dg.maThe << "\n";
+  cout << "-> Ma the tu dong cap: " << dg.maThe << "\n";
 
   cout << "Nhap ho va ten dem: ";
   cin.getline(dg.ho, sizeof(dg.ho));
@@ -79,6 +80,9 @@ void ChucNang_ThemDocGia(TREE_DocGia &root) {
   if (ThemDocGia(root, dg)) {
     cout << "[THANH CONG] Da them the doc gia: " << dg.ho << " " << dg.ten
          << " (Ma: " << dg.maThe << ")\n";
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    GhiFileDocGia(root, FILE_DOCGIA);
+    cout << "[HE THONG] Da tu dong luu du lieu vao " << FILE_DOCGIA << "!\n";
   }
 }
 
@@ -100,28 +104,32 @@ void ChucNang_HieuChinhDocGia(TREE_DocGia root) {
   }
 
   cout << "Thong tin hien tai: " << pDG->data.ho << " " << pDG->data.ten
-       << " | Phai: " << pDG->data.phai
-       << " | Trang thai: " << (pDG->data.trangThai == 1 ? "Hoat dong" : "Bi khoa")
-       << "\n\n";
+       << " | Phai: " << pDG->data.phai << " | Trang thai: "
+       << (pDG->data.trangThai == 1 ? "Hoat dong" : "Bi khoa") << "\n\n";
 
   char hoMoi[50], tenMoi[20], phaiMoi[5];
   int ttMoi;
 
   cout << "Nhap ho moi (Enter de giu nguyen): ";
   cin.getline(hoMoi, sizeof(hoMoi));
-  if (strlen(hoMoi) == 0) strcpy(hoMoi, pDG->data.ho);
+  if (strlen(hoMoi) == 0)
+    strcpy(hoMoi, pDG->data.ho);
 
   cout << "Nhap ten moi (Enter de giu nguyen): ";
   cin.getline(tenMoi, sizeof(tenMoi));
-  if (strlen(tenMoi) == 0) strcpy(tenMoi, pDG->data.ten);
+  if (strlen(tenMoi) == 0)
+    strcpy(tenMoi, pDG->data.ten);
 
   cout << "Chon phai (1. Nam | 2. Nu | 0. Giu nguyen): ";
   int chonPhai;
   cin >> chonPhai;
   XoaBoDemCin();
-  if (chonPhai == 1) strcpy(phaiMoi, "Nam");
-  else if (chonPhai == 2) strcpy(phaiMoi, "Nu");
-  else strcpy(phaiMoi, pDG->data.phai);
+  if (chonPhai == 1)
+    strcpy(phaiMoi, "Nam");
+  else if (chonPhai == 2)
+    strcpy(phaiMoi, "Nu");
+  else
+    strcpy(phaiMoi, pDG->data.phai);
 
   cout << "Trang thai the (1. Hoat dong | 0. Khoa the): ";
   cin >> ttMoi;
@@ -129,11 +137,14 @@ void ChucNang_HieuChinhDocGia(TREE_DocGia root) {
 
   if (HieuChinhDocGia(root, maThe, hoMoi, tenMoi, phaiMoi, ttMoi)) {
     cout << "[THANH CONG] Da cap nhat thong tin doc gia " << maThe << "!\n";
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    GhiFileDocGia(root, FILE_DOCGIA);
+    cout << "[HE THONG] Da tu dong luu du lieu vao " << FILE_DOCGIA << "!\n";
   }
 }
 
 void ChucNang_XoaDocGia(TREE_DocGia &root) {
-  cout << "\n--- [A]. XOA THE DOC GIA (CAY BST) ---\n";
+  cout << "\n--- [A]. XOA THE DOC GIA ---\n";
   int maThe;
   cout << "Nhap ma the can xoa: ";
   if (!(cin >> maThe)) {
@@ -150,6 +161,9 @@ void ChucNang_XoaDocGia(TREE_DocGia &root) {
   if (cf == 'Y' || cf == 'y') {
     if (XoaDocGia(root, maThe)) {
       cout << "[THANH CONG] Da xoa doc gia " << maThe << " khoi he thong.\n";
+      // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+      GhiFileDocGia(root, FILE_DOCGIA);
+      cout << "[HE THONG] Da tu dong luu du lieu vao " << FILE_DOCGIA << "!\n";
     }
   } else {
     cout << "Da huy thao tac xoa.\n";
@@ -161,9 +175,9 @@ void ChucNang_XoaDocGia(TREE_DocGia &root) {
 // ============================================================================
 
 void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
-  cout << "\n--- [C]. THEM DAU SACH MOI (MANG CON TRO) ---\n";
+  cout << "\n--- [C]. THEM DAU SACH MOI ---\n";
   if (dauSachDay(dsDS)) {
-    cout << "[LOI] Danh sach dau sach da day (MAX = 10000)!\n";
+    cout << "[LOI] Danh sach dau sach da day!\n";
     return;
   }
 
@@ -198,7 +212,8 @@ void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
   moi->dms = nullptr;
 
   if (themDauSach(dsDS, moi)) {
-    cout << "[THANH CONG] Da them dau sach \"" << moi->tenSach << "\" vao danh sach!\n";
+    cout << "[THANH CONG] Da them dau sach \"" << moi->tenSach
+         << "\" vao danh sach!\n";
     cout << "Ban co muon them ban sao sach ngay bay gio khong (Y/N)? ";
     char c;
     cin >> c;
@@ -212,10 +227,14 @@ void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
       cout << "Nhap vi tri luu tru (VD: Ke A1 - Ngan 2): ";
       cin.getline(viTri, sizeof(viTri));
       if (themBanSao(*moi, soLuong, viTri)) {
-        cout << "[THANH CONG] Da tao tu dong " << soLuong << " ban sao sach dang ["
-             << moi->ISBN << "_1 -> " << moi->ISBN << "_" << soLuong << "].\n";
+        cout << "[THANH CONG] Da tao tu dong " << soLuong
+             << " ban sao sach dang [" << moi->ISBN << "_1 -> " << moi->ISBN
+             << "_" << soLuong << "].\n";
       }
     }
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    ghiDauSach(dsDS, FILE_DAUSACH);
+    cout << "[HE THONG] Da tu dong luu du lieu vao " << FILE_DAUSACH << "!\n";
   } else {
     delete moi;
     cout << "[LOI] Them dau sach that bai!\n";
@@ -223,7 +242,7 @@ void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
 }
 
 void ChucNang_ThemBanSao(DanhSachDauSach &dsDS) {
-  cout << "\n--- [C]. THEM BAN SAO SACH CON VAO DANH MUC SACH (DMS) ---\n";
+  cout << "\n--- [C]. THEM BAN SAO SACH CON VAO DANH MUC SACH ---\n";
   char isbn[15];
   cout << "Nhap ISBN cua dau sach can them ban sao: ";
   cin.getline(isbn, sizeof(isbn));
@@ -234,7 +253,8 @@ void ChucNang_ThemBanSao(DanhSachDauSach &dsDS) {
     return;
   }
 
-  cout << "Dau sach: " << pDS->tenSach << " (Hien co: " << demSoLuongDMS(pDS->dms) << " cuon)\n";
+  cout << "Dau sach: " << pDS->tenSach
+       << " (Hien co: " << demSoLuongDMS(pDS->dms) << " cuon)\n";
   int soLuong;
   char viTri[50];
   cout << "Nhap so luong cuon sach muon nhap them: ";
@@ -244,7 +264,11 @@ void ChucNang_ThemBanSao(DanhSachDauSach &dsDS) {
   cin.getline(viTri, sizeof(viTri));
 
   if (themBanSao(*pDS, soLuong, viTri)) {
-    cout << "[THANH CONG] Da tao them " << soLuong << " ban sao vao danh muc sach!\n";
+    cout << "[THANH CONG] Da tao them " << soLuong
+         << " ban sao vao danh muc sach!\n";
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    ghiDauSach(dsDS, FILE_DAUSACH);
+    cout << "[HE THONG] Da tu dong luu du lieu vao " << FILE_DAUSACH << "!\n";
   }
 }
 
@@ -257,7 +281,8 @@ void ChucNang_TimKiemSach(const DanhSachDauSach &dsDS) {
   DauSach *ketQua[MAX_DAUSACH];
   int soLuong = timDauSachTheoTen(dsDS, tuKhoa, ketQua, dsDS.n);
   if (soLuong <= 0) {
-    cout << "[THONG BAO] Khong tim thay dau sach nao phu hop voi tu khoa \"" << tuKhoa << "\".\n";
+    cout << "[THONG BAO] Khong tim thay dau sach nao phu hop voi tu khoa \""
+         << tuKhoa << "\".\n";
     return;
   }
 
@@ -265,17 +290,21 @@ void ChucNang_TimKiemSach(const DanhSachDauSach &dsDS) {
   for (int i = 0; i < soLuong; ++i) {
     DauSach *d = ketQua[i];
     cout << "---------------------------------------------------------\n";
-    cout << "[" << (i + 1) << "] ISBN: " << d->ISBN << " | Ten: " << d->tenSach << "\n";
+    cout << "[" << (i + 1) << "] ISBN: " << d->ISBN << " | Ten: " << d->tenSach
+         << "\n";
     cout << "    Tac gia: " << d->tacGia << " | Nam XB: " << d->namXuatBan
-         << " | The loai: " << d->theLoai << " | So trang: " << d->soTrang << "\n";
-    cout << "    Danh muc cac ban sao sach (" << demSoLuongDMS(d->dms) << " cuon):\n";
+         << " | The loai: " << d->theLoai << " | So trang: " << d->soTrang
+         << "\n";
+    cout << "    Danh muc cac ban sao sach (" << demSoLuongDMS(d->dms)
+         << " cuon):\n";
     NodeDMS *p = d->dms;
     if (!p) {
       cout << "      (Chua co ban sao nao trong kho)\n";
     }
     while (p) {
-      const char *tt = (p->data.trangThai == 0) ? "Cho muon" :
-                       (p->data.trangThai == 1) ? "Da muon" : "Thanh ly";
+      const char *tt = (p->data.trangThai == 0)   ? "Cho muon"
+                       : (p->data.trangThai == 1) ? "Da muon"
+                                                  : "Thanh ly";
       printf("      - Ma sach: %-12s | Trang thai: %-10s | Vi tri: %s\n",
              p->data.maSach, tt, p->data.viTri);
       p = p->pNext;
@@ -292,7 +321,8 @@ void ChucNang_InSachTheoTheLoai(const DanhSachDauSach &dsDS) {
 
   DauSach *ketQua[MAX_DAUSACH];
   int soLuong = layDauSachTheoTheLoai(dsDS, ketQua, dsDS.n);
-  if (soLuong <= 0) return;
+  if (soLuong <= 0)
+    return;
 
   string theLoaiHienTai = "";
   for (int i = 0; i < soLuong; ++i) {
@@ -302,11 +332,12 @@ void ChucNang_InSachTheoTheLoai(const DanhSachDauSach &dsDS) {
       cout << "\n=========================================================\n";
       cout << "THE LOAI: " << theLoaiHienTai << "\n";
       cout << "=========================================================\n";
-      printf("%-10s | %-32s | %-18s | %-8s\n", "ISBN", "Ten Sach", "Tac Gia", "Nam XB");
+      printf("%-10s | %-32s | %-18s | %-8s\n", "ISBN", "Ten Sach", "Tac Gia",
+             "Nam XB");
       cout << "---------------------------------------------------------\n";
     }
-    printf("%-10s | %-32.32s | %-18.18s | %-8d\n",
-           d->ISBN, d->tenSach, d->tacGia, d->namXuatBan);
+    printf("%-10s | %-32.32s | %-18.18s | %-8d\n", d->ISBN, d->tenSach,
+           d->tacGia, d->namXuatBan);
   }
 }
 
@@ -329,7 +360,12 @@ void ChucNang_MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   cout << "Nhap ma sach can muon (VD: CS101_1): ";
   cin.getline(maSach, sizeof(maSach));
 
-  MuonSach(root, dsDS, maThe, maSach);
+  if (MuonSach(root, dsDS, maThe, maSach)) {
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    GhiFileDocGia(root, FILE_DOCGIA);
+    ghiDauSach(dsDS, FILE_DAUSACH);
+    cout << "[HE THONG] Da tu dong luu cap nhat giao dich vao file!\n";
+  }
 }
 
 void ChucNang_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
@@ -347,7 +383,12 @@ void ChucNang_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   cout << "Nhap ma sach can tra: ";
   cin.getline(maSach, sizeof(maSach));
 
-  TraSach(root, dsDS, maThe, maSach);
+  if (TraSach(root, dsDS, maThe, maSach)) {
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    GhiFileDocGia(root, FILE_DOCGIA);
+    ghiDauSach(dsDS, FILE_DAUSACH);
+    cout << "[HE THONG] Da tu dong luu cap nhat giao dich vao file!\n";
+  }
 }
 
 void ChucNang_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
@@ -365,10 +406,16 @@ void ChucNang_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   cout << "Nhap ma sach bi mat: ";
   cin.getline(maSach, sizeof(maSach));
 
-  BaoMatSach(root, dsDS, maThe, maSach);
+  if (BaoMatSach(root, dsDS, maThe, maSach)) {
+    // TỰ ĐỘNG LƯU NGAY LẬP TỨC
+    GhiFileDocGia(root, FILE_DOCGIA);
+    ghiDauSach(dsDS, FILE_DAUSACH);
+    cout << "[HE THONG] Da tu dong luu cap nhat giao dich vao file!\n";
+  }
 }
 
-void ChucNang_LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS) {
+void ChucNang_LietKeSachDangMuon(TREE_DocGia root,
+                                 const DanhSachDauSach &dsDS) {
   cout << "\n--- [H]. LIET KE SACH DOC GIA DANG MUON ---\n";
   int maThe;
   cout << "Nhap ma the doc gia: ";
@@ -396,14 +443,18 @@ void ChucNang_Top10(const DanhSachDauSach &dsDS, const NodeDocGia *root) {
     return;
   }
 
-  printf("+-----+------------+----------------------------------+------------+\n");
-  printf("| TOP |   ISBN     |             Ten Sach             | Luot Muon  |\n");
-  printf("+-----+------------+----------------------------------+------------+\n");
+  printf(
+      "+-----+------------+----------------------------------+------------+\n");
+  printf(
+      "| TOP |   ISBN     |             Ten Sach             | Luot Muon  |\n");
+  printf(
+      "+-----+------------+----------------------------------+------------+\n");
   for (int i = 0; i < n; ++i) {
-    printf("| %-3d | %-10s | %-32.32s | %-10d |\n",
-           i + 1, top10[i].sach->ISBN, top10[i].sach->tenSach, top10[i].soLuotMuon);
+    printf("| %-3d | %-10s | %-32.32s | %-10d |\n", i + 1, top10[i].sach->ISBN,
+           top10[i].sach->tenSach, top10[i].soLuotMuon);
   }
-  printf("+-----+------------+----------------------------------+------------+\n");
+  printf(
+      "+-----+------------+----------------------------------+------------+\n");
 }
 
 // ============================================================================
@@ -411,42 +462,54 @@ void ChucNang_Top10(const DanhSachDauSach &dsDS, const NodeDocGia *root) {
 // ============================================================================
 
 int main() {
+  // Đảm bảo thư mục lưu trữ Data luôn tồn tại ngay khi bật app
+#ifdef _WIN32
+  CreateDirectoryA("Data", NULL);
+#endif
+
   TREE_DocGia root;
   KhoiTaoCay(root);
 
   DanhSachDauSach dsDS;
   khoiTaoDSDS(dsDS);
 
-  const char *fileDocGia = "Data/DocGia.txt";
-  const char *fileDauSach = "Data/DauSach.txt";
-
   cout << "Dang nap du lieu tu dia...\n";
-  DocFileDocGia(root, fileDocGia);
-  docDauSach(dsDS, fileDauSach);
-  cout << "Khoi dong he thong thanh cong!\n";
+  bool docDGOk = DocFileDocGia(root, FILE_DOCGIA);
+  bool docDSOk = docDauSach(dsDS, FILE_DAUSACH);
+
+  // Nếu file chưa từng tồn tại, tự động tạo file rỗng chuẩn để người dùng nhìn thấy trong thư mục
+  if (!docDGOk) {
+    GhiFileDocGia(root, FILE_DOCGIA);
+  }
+  if (!docDSOk) {
+    ghiDauSach(dsDS, FILE_DAUSACH);
+  }
+
+  cout << "Khoi dong he thong thanh cong! (Hien co: "
+       << DemSoLuongDocGia(root) << " doc gia, "
+       << dsDS.n << " dau sach trong kho)\n";
 
   int luaChon = -1;
   do {
     cout << "\n=============================================================\n";
-    cout << "           HE THONG QUAN LY THU VIEN (C++ CTDL&GT)          \n";
-    cout << "   Nhom: Le Van Hoang Hieu (Doc Gia) & Le Anh Duc (Dau Sach) \n";
+    cout << "           HE THONG QUAN LY THU VIEN         \n";
     cout << "=============================================================\n";
-    cout << " [1].  Them the doc gia moi (Sinh ma LCG tu dong)\n";
-    cout << " [2].  In danh sach doc gia theo MA THE (Duyet BST LNR)\n";
-    cout << " [3].  In danh sach doc gia theo TEN + HO (QuickSort Median)\n";
+    cout << " [1].  Them the doc gia moi \n";
+    cout << " [2].  In danh sach doc gia theo MA THE\n";
+    cout << " [3].  In danh sach doc gia theo TEN + HO \n";
     cout << " [4].  Hieu chinh thong tin the doc gia\n";
     cout << " [5].  Xoa the doc gia khoi cay BST\n";
     cout << "-------------------------------------------------------------\n";
-    cout << " [6].  Them dau sach moi (Chen giu thu tu mang con tro)\n";
-    cout << " [7].  Them ban sao sach con vao Danh Muc Sach (DMS)\n";
+    cout << " [6].  Them dau sach moi \n";
+    cout << " [7].  Them ban sao sach con vao Danh Muc Sach\n";
     cout << " [8].  In danh sach dau sach theo tung The Loai\n";
     cout << " [9].  Tra cuu thong tin sach theo Ten / ISBN\n";
     cout << "-------------------------------------------------------------\n";
-    cout << " [10]. Giao dich MUON SACH (Bay 3 dieu kien, cap nhat DMS)\n";
+    cout << " [10]. Giao dich MUON SACH\n";
     cout << " [11]. Giao dich TRA SACH\n";
-    cout << " [12]. Giao dich BAO MAT SACH (Thanh ly)\n";
+    cout << " [12]. Giao dich BAO MAT SACH\n";
     cout << " [13]. Liet ke danh sach sach doc gia dang muon\n";
-    cout << " [14]. Danh sach doc gia MUON SACH QUA HAN 7 NGAY (QuickSort)\n";
+    cout << " [14]. Danh sach doc gia MUON SACH QUA HAN 7 NGAY\n";
     cout << " [15]. Thong ke TOP 10 dau sach muon nhieu nhat\n";
     cout << "-------------------------------------------------------------\n";
     cout << " [0].  Luu du lieu va Thoat chuong trinh\n";
@@ -462,26 +525,57 @@ int main() {
     XoaBoDemCin();
 
     switch (luaChon) {
-    case 1:  ChucNang_ThemDocGia(root); break;
-    case 2:  InDanhSachDocGia_TheoMaThe(root); break;
-    case 3:  InDanhSachDocGia_TheoTenHo(root); break;
-    case 4:  ChucNang_HieuChinhDocGia(root); break;
-    case 5:  ChucNang_XoaDocGia(root); break;
-    case 6:  ChucNang_ThemDauSach(dsDS); break;
-    case 7:  ChucNang_ThemBanSao(dsDS); break;
-    case 8:  ChucNang_InSachTheoTheLoai(dsDS); break;
-    case 9:  ChucNang_TimKiemSach(dsDS); break;
-    case 10: ChucNang_MuonSach(root, dsDS); break;
-    case 11: ChucNang_TraSach(root, dsDS); break;
-    case 12: ChucNang_BaoMatSach(root, dsDS); break;
-    case 13: ChucNang_LietKeSachDangMuon(root, dsDS); break;
-    case 14: InDanhSachDocGiaQuaHan(root); break;
-    case 15: ChucNang_Top10(dsDS, root); break;
+    case 1:
+      ChucNang_ThemDocGia(root);
+      break;
+    case 2:
+      InDanhSachDocGia_TheoMaThe(root);
+      break;
+    case 3:
+      InDanhSachDocGia_TheoTenHo(root);
+      break;
+    case 4:
+      ChucNang_HieuChinhDocGia(root);
+      break;
+    case 5:
+      ChucNang_XoaDocGia(root);
+      break;
+    case 6:
+      ChucNang_ThemDauSach(dsDS);
+      break;
+    case 7:
+      ChucNang_ThemBanSao(dsDS);
+      break;
+    case 8:
+      ChucNang_InSachTheoTheLoai(dsDS);
+      break;
+    case 9:
+      ChucNang_TimKiemSach(dsDS);
+      break;
+    case 10:
+      ChucNang_MuonSach(root, dsDS);
+      break;
+    case 11:
+      ChucNang_TraSach(root, dsDS);
+      break;
+    case 12:
+      ChucNang_BaoMatSach(root, dsDS);
+      break;
+    case 13:
+      ChucNang_LietKeSachDangMuon(root, dsDS);
+      break;
+    case 14:
+      InDanhSachDocGiaQuaHan(root);
+      break;
+    case 15:
+      ChucNang_Top10(dsDS, root);
+      break;
     case 0:
       cout << "\nDang luu du lieu xuong dia...\n";
-      GhiFileDocGia(root, fileDocGia);
-      ghiDauSach(dsDS, fileDauSach);
-      cout << "Da luu thanh cong file " << fileDocGia << " va " << fileDauSach << "!\n";
+      GhiFileDocGia(root, FILE_DOCGIA);
+      ghiDauSach(dsDS, FILE_DAUSACH);
+      cout << "Da luu thanh cong file " << FILE_DOCGIA << " va " << FILE_DAUSACH
+           << "!\n";
       break;
     default:
       cout << "[LOI] Lua chon khong hop le! Vui long chon tu 0 den 15.\n";
