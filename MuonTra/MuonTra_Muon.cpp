@@ -1,5 +1,7 @@
 #include "../DocGia.h"
 #include "../MuonTra.h"
+#include "../DauSach.h"     // Móc nối API Đức: timSachTheoMaSach()
+#include "../DanhMucSach.h" // Móc nối API Đức: capNhatTrangThaiSach()
 #include <cstring>
 #include <iostream>
 
@@ -18,10 +20,10 @@ using namespace std;
 //   1. Tìm độc giả trên BST theo maThe → O(log N)
 //   2. Kiểm tra 3 điều kiện mượn (thẻ mở, < 3 cuốn, không quá hạn) → O(K)
 //   3. Kiểm tra trùng lặp maSach đang mượn → O(K)
-//   4. Kiểm tra sách có khả dụng trong DMS (gọi API Đức) → O(log N + M)
+//   4. Kiểm tra sách có khả dụng trong DMS (gọi API Đức: timSachTheoMaSach) → O(log N + M)
 //   5. Cấp phát NodeMuonTra mới → O(1)
 //   6. Chèn vào ĐẦU DSLK dsMuonTra → O(1)
-//   7. Cập nhật trạng thái sách bên DMS sang 1 (đã mượn) → O(1)
+//   7. Cập nhật trạng thái sách bên DMS sang 1 (đã mượn - gọi API Đức: capNhatTrangThaiSach) → O(1)
 bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
               const char *maSach) {
   // ── Bước 1: Tìm độc giả trên cây BST ──
@@ -107,40 +109,5 @@ bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
        << (pDauSach ? pDauSach->tenSach : maSach) << "\" (Ma: " << maSach
        << ") vao ngay " << pNew->data.ngayMuon.ngay << "/"
        << pNew->data.ngayMuon.thang << "/" << pNew->data.ngayMuon.nam << ".\n";
-  return true;
-}
-
-// [HÀM MƯỢN SÁCH — PHIÊN BẢN ĐỘC LẬP / UNIT TEST KHÔNG CẦN DMS]
-bool MuonSach(TREE_DocGia root, int maThe, const char *maSach) {
-  NodeDocGia *pDG = TimKiemDocGia(root, maThe);
-  if (pDG == nullptr) {
-    cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";
-    return false;
-  }
-
-  KetQuaKiemTraMuon maLoi = KiemTraDieuKienMuon(pDG);
-  if (maLoi != DU_DIEU_KIEN_MUON)
-    return false;
-
-  NodeMuonTra *pCheck = pDG->data.dsMuonTra;
-  while (pCheck != nullptr) {
-    if (pCheck->data.trangThai == 0 && strcmp(pCheck->data.maSach, maSach) == 0)
-      return false;
-    pCheck = pCheck->pNext;
-  }
-
-  NodeMuonTra *pNew = new NodeMuonTra;
-  if (pNew == nullptr)
-    return false;
-
-  strcpy(pNew->data.maSach, maSach);
-  pNew->data.ngayMuon = LayNgayHienTai();
-  pNew->data.ngayTra.ngay = 0;
-  pNew->data.ngayTra.thang = 0;
-  pNew->data.ngayTra.nam = 0;
-  pNew->data.trangThai = 0;
-
-  pNew->pNext = pDG->data.dsMuonTra;
-  pDG->data.dsMuonTra = pNew;
   return true;
 }

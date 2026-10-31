@@ -16,12 +16,12 @@ using namespace std;
 // PHẦN 1: ĐẾM TỔNG SỐ SÁCH QUÁ HẠN (Cấp phát mảng đúng kích thước)
 // ############################################################################
 
-// [HÀM ĐỆ QUY DUYỆT CÂY BST ĐẾM SÁCH QUÁ HẠN]
+// [HÀM ĐỆ QUY DUYỆT CÂY BST ĐẾM SÁCH QUÁ HẠN - NỘI BỘ]
 // Duyệt toàn bộ cây BST (LNR), với mỗi độc giả duyệt DSLK mượn trả
 // tìm các sách đang mượn (trangThai == 0) có số ngày mượn > MAX_NGAY_MUON.
 // Tối ưu: Nhận mốc ngày hiện tại một lần duy nhất từ ngoài vào, tránh gọi time()
 // lặp đi lặp lại ở mỗi node.
-void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, const Date &homNay, int &count) {
+static void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, const Date &homNay, int &count) {
   if (root == nullptr)
     return;
 
@@ -43,12 +43,6 @@ void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, const Date &homNay, int &count
   DemTongSachQuaHan_DuyetCay(root->pRight, homNay, count);
 }
 
-// Wrapper tương thích nguyên mẫu
-void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, int &count) {
-  Date homNay = LayNgayHienTai();
-  DemTongSachQuaHan_DuyetCay(root, homNay, count);
-}
-
 int DemTongSachQuaHan(TREE_DocGia root) {
   int count = 0;
   Date homNay = LayNgayHienTai();
@@ -60,11 +54,11 @@ int DemTongSachQuaHan(TREE_DocGia root) {
 // PHẦN 2: NẠP THÔNG TIN QUÁ HẠN VÀO MẢNG
 // ############################################################################
 
-// [HÀM ĐỆ QUY NẠP DANH SÁCH QUÁ HẠN VÀO MẢNG]
+// [HÀM ĐỆ QUY NẠP DANH SÁCH QUÁ HẠN VÀO MẢNG - NỘI BỘ]
 // Duyệt cây BST lần 2 (sau khi đã biết kích thước mảng), nạp thông
 // tin quá hạn vào mảng QuaHanInfo[] đã cấp phát đúng kích thước.
-void NapDanhSachQuaHan(TREE_DocGia root, const Date &homNay, QuaHanInfo arr[],
-                       int &index) {
+static void NapDanhSachQuaHan(TREE_DocGia root, const Date &homNay, QuaHanInfo arr[],
+                              int &index) {
   if (root == nullptr)
     return;
 
@@ -94,21 +88,15 @@ void NapDanhSachQuaHan(TREE_DocGia root, const Date &homNay, QuaHanInfo arr[],
   NapDanhSachQuaHan(root->pRight, homNay, arr, index);
 }
 
-// Wrapper tương thích nguyên mẫu
-void NapDanhSachQuaHan(TREE_DocGia root, QuaHanInfo arr[], int &index) {
-  Date homNay = LayNgayHienTai();
-  NapDanhSachQuaHan(root, homNay, arr, index);
-}
-
 // ############################################################################
 // PHẦN 3: QUICKSORT MẢNG QUÁ HẠN (GIẢM DẦN THEO SỐ NGÀY QUÁ HẠN)
 // ############################################################################
 
-// [THUẬT TOÁN QUICKSORT CHO MẢNG QuaHanInfo — GIẢM DẦN]
+// [THUẬT TOÁN QUICKSORT CHO MẢNG QuaHanInfo — GIẢM DẦN - NỘI BỘ]
 // Sắp xếp mảng QuaHanInfo[] theo soNgayQuaHan giảm dần.
 //  Người quá hạn nhiều nhất nằm đầu bảng → dễ quản lý và nhắc nhở.
 // Giải thuật: QuickSort in-place, chọn pivot ở giữa (middle element)..
-void QuickSortQuaHan(QuaHanInfo arr[], int left, int right) {
+static void QuickSortQuaHan(QuaHanInfo arr[], int left, int right) {
   if (left >= right)
     return; // Điều kiện dừng đệ quy
 

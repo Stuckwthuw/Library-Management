@@ -1,4 +1,5 @@
 #include "../MuonTra.h"
+#include "../Date.h" // Móc nối chính thức API module Date của Đức
 #include <cstring>
 #include <iostream>
 
@@ -23,17 +24,8 @@ int TinhKhoangCachNgay(Date d1, Date d2) {
   return khoangCachNgay(d1, d2);
 }
 
-// [CÁC HÀM TƯƠNG THÍCH NGƯỢC TỪ GIAI ĐOẠN STUB]
-Date LayNgayHienTai_Stub() {
-  return LayNgayHienTai();
-}
-
-int TinhKhoangCachNgay_Stub(Date d1, Date d2) {
-  return TinhKhoangCachNgay(d1, d2);
-}
-
 // ############################################################################
-// PHẦN 2: CÁC HÀM PHỤ TRỢ CHÍNH THỨC
+// PHẦN 2: CÁC HÀM PHỤ TRỢ NGHIỆP VỤ MƯỢN TRẢ
 // ############################################################################
 
 // [HÀM ĐẾM SỐ SÁCH ĐANG MƯỢN CỦA MỘT ĐỘC GIẢ]

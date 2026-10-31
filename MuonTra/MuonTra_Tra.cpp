@@ -1,5 +1,7 @@
 #include "../DocGia.h"
 #include "../MuonTra.h"
+#include "../DauSach.h"     // Móc nối API Đức: timSachTheoMaSach()
+#include "../DanhMucSach.h" // Móc nối API Đức: capNhatTrangThaiSach()
 #include <cstring>
 #include <iostream>
 
@@ -61,24 +63,6 @@ bool TraSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
   return false;
 }
 
-// [HÀM TRẢ SÁCH — PHIÊN BẢN ĐỘC LẬP / UNIT TEST]
-bool TraSach(TREE_DocGia root, int maThe, const char *maSach) {
-  NodeDocGia *pDG = TimKiemDocGia(root, maThe);
-  if (pDG == nullptr)
-    return false;
-
-  NodeMuonTra *pCurr = pDG->data.dsMuonTra;
-  while (pCurr != nullptr) {
-    if (pCurr->data.trangThai == 0 && strcmp(pCurr->data.maSach, maSach) == 0) {
-      pCurr->data.trangThai = 1;
-      pCurr->data.ngayTra = LayNgayHienTai();
-      return true;
-    }
-    pCurr = pCurr->pNext;
-  }
-  return false;
-}
-
 // [HÀM BÁO MẤT SÁCH — PHIÊN BẢN GHÉP NỐI ĐẦY ĐỦ DMS]
 // Mục đích: Xử lý khi độc giả báo mất sách:
 //   - Giao dịch mượn trả chuyển sang trangThai = 2 (Làm mất sách)
@@ -117,23 +101,5 @@ bool BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
 
   cout << "[LOI] Doc gia " << maThe << " khong co giao dich muon sach "
        << maSach << " dang hoat dong!\n";
-  return false;
-}
-
-// [HÀM BÁO MẤT SÁCH — PHIÊN BẢN ĐỘC LẬP / UNIT TEST]
-bool BaoMatSach(TREE_DocGia root, int maThe, const char *maSach) {
-  NodeDocGia *pDG = TimKiemDocGia(root, maThe);
-  if (pDG == nullptr)
-    return false;
-
-  NodeMuonTra *pCurr = pDG->data.dsMuonTra;
-  while (pCurr != nullptr) {
-    if (pCurr->data.trangThai == 0 && strcmp(pCurr->data.maSach, maSach) == 0) {
-      pCurr->data.trangThai = 2;
-      pCurr->data.ngayTra = LayNgayHienTai();
-      return true;
-    }
-    pCurr = pCurr->pNext;
-  }
   return false;
 }
