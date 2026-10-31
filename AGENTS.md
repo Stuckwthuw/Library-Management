@@ -138,3 +138,26 @@ Mỗi khi người dùng mở phiên chat mới và yêu cầu code:
 3. Chỉ thực hiện các thao tác nằm đúng trong phân hệ của thành viên đó và trên đúng nhánh Git của họ.
 4. Nếu yêu cầu có chạm đến file của thành viên còn lại $\rightarrow$ lập tức dừng lại, cảnh báo và chỉ đưa ra gợi ý/đoạn code mẫu để trao đổi nội bộ.
 5. Sau khi hoàn thành thao tác, lập tức báo cáo chi tiết theo đúng quy chuẩn tại **Mục 4**.
+
+
+---
+
+## 10. TIÊU CHUẨN TRẢI NGHIỆM NGƯỜI DÙNG (UX) & BẮT LỖI DỮ LIỆU BẮT BUỘC (MỌI AGENT PHẢI TUÂN THỦ)
+
+Bất kỳ AI Agent nào khi hỗ trợ thành viên (Hiếu hoặc Đức) sinh code nhập/xuất dữ liệu **BẮT BUỘC** phải tuân theo 5 quy tắc nghiệp vụ sau:
+
+1. **Chuẩn hóa chuỗi (String Normalization)**:
+   - *Họ tên / Tác giả*: Loại bỏ khoảng trắng đầu/cuối, rút gọn nhiều khoảng trắng liên tiếp ở giữa thành đúng 1 khoảng trắng, tự động viết hoa chữ cái đầu mỗi từ (*Title Case*).
+   - *Mã định danh (ISBN, Mã Sách)*: Tự động xóa sạch mọi khoảng trắng và chuyển thành chữ IN HOA (ví dụ: `"  cs101_1 "` $\rightarrow$ `"CS101_1"`).
+   - *Bẫy chuỗi rỗng*: Tuyệt đối không chấp nhận chuỗi chỉ toàn dấu cách (`"   "`).
+2. **Bắt lỗi nhập số an toàn (Safe Numeric Input)**:
+   - Mọi thao tác `cin >> val` đều phải bẫy lỗi `if (!(cin >> val))` để chống crash hoặc lặp vô tận khi người dùng gõ chữ.
+   - Luôn kiểm tra miền giá trị hợp lệ (range check) trước khi xử lý tiếp.
+3. **Xem trước & Xác nhận hành động (Preview & Confirmation)**:
+   - Khi mượn/trả sách: Phải hiển thị xem trước Họ tên độc giả, số sách đang giữ, Tên cuốn sách, Kệ sách trước khi bấm xác nhận.
+   - Mọi thao tác thay đổi dữ liệu (Thêm, Sửa, Xóa, Mượn, Trả, Báo mất) bắt buộc phải hỏi xác nhận `(Y/N)` để tránh thao tác nhầm.
+4. **Định dạng bảng & Thông báo trực quan**:
+   - Xuất dữ liệu phải có viền, căn lề thẳng cột, thông báo thân thiện kèm tiền tố: `[THANH CONG]`, `[LOI]`, `[THONG BAO]`, `[CANH BAO]`.
+   - Danh sách dài phải hỗ trợ phân trang (Pagination) để không bị trôi mất phần đầu trên Console.
+5. **Đồng bộ hóa dữ liệu tức thì (Real-time Auto-Save)**:
+   - Mọi giao dịch làm biến đổi dữ liệu (Thêm/Sửa/Xóa Độc Giả, Thêm Sách, Mượn/Trả Sách) phải tự động gọi hàm ghi file xuống đĩa ngay lập tức, không để phụ thuộc vào việc người dùng có bấm thoát hay tắt ngang bằng nút [X].

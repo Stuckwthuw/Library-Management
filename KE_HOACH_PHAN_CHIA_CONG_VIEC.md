@@ -75,6 +75,19 @@ graph TD
 
 ---
 
+### 3.3. NHIỆM VỤ CHUNG: BẮT LỖI TOÀN DIỆN, CHUẨN HÓA DỮ LIỆU & TỐI ƯU TRẢI NGHIỆM NGƯỜI DÙNG (UX)
+> **Mục tiêu**: Đóng vai một thủ thư thực tế quản lý thư viện hàng ngày — hệ thống không chỉ đúng giải thuật DSA mà phải an toàn tuyệt đối trước mọi thao tác sai của người dùng, giao diện trực quan và chuyên nghiệp.
+
+| STT | Nhóm nhiệm vụ | Tiêu chuẩn kỹ thuật bắt buộc | Thành viên phụ trách |
+| :---: | :--- | :--- | :--- |
+| **C1** | **Chuẩn hóa chuỗi & Định dạng tự động** | • **Họ tên độc giả / Tác giả**: Tự động loại bỏ khoảng trắng thừa (trim đầu/cuối, gộp nhiều space thành 1 space), tự động viết hoa chữ cái đầu mỗi từ (*Title Case*).<br>• **Mã ký hiệu (Mã thẻ, Mã sách, ISBN)**: Tự động xóa mọi khoảng trắng và chuyển thành chữ IN HOA.<br>• **Bẫy chuỗi rỗng**: Không chấp nhận chuỗi chỉ chứa toàn ký tự space. | **Hiếu**: Phân hệ Độc giả & Mượn trả<br>**Đức**: Phân hệ Đầu sách & DMS |
+| **C2** | **Bắt lỗi nhập số an toàn (Defensive Input)** | • Kiểm tra nghiêm ngặt `if (!(cin >> val))` cho mọi điểm nhập số nguyên.<br>• Khi nhập sai kiểu (gõ chữ vào ô số) $\rightarrow$ lập tức xóa cờ lỗi `cin.clear()`, dọn sạch bộ đệm `cin.ignore()`, thông báo lịch sự, không để crash hay lặp vô tận.<br>• Kiểm tra miền giá trị hợp lệ: phái (1-2), trạng thái (0-1), số trang (> 0), năm XB (1000-2100), số lượng bản sao (> 0). | **Cả hai** (áp dụng cho tất cả điểm nhập liệu) |
+| **C3** | **Tối ưu trải nghiệm thao tác thủ thư (UX)** | • **Xem trước & Đối soát (Preview)**: Khi mượn/trả sách, hiển thị rõ Họ tên độc giả, số sách đang giữ, Tên cuốn sách, Vị trí trên kệ để thủ thư kiểm tra thực tế trước khi ghi nhận.<br>• **Xác nhận hành động (Confirmation)**: Mọi thao tác thêm mới, hiệu chỉnh, xóa, mượn, trả, báo mất đều phải có bước xác nhận `(Y/N)`.<br>• **Phản hồi tức thì**: Báo kết quả rõ ràng với các tiền tố `[THANH CONG]`, `[LOI]`, `[CANH BAO]`, `[THONG BAO]`. | **Cả hai** |
+| **C4** | **Xuất dữ liệu & Phân trang chống tràn màn hình** | • Khi danh sách rỗng $\rightarrow$ in thông báo rõ ràng, không in bảng trống vô nghĩa.<br>• Bảng in phải căn lề thẳng cột, có tiêu đề và đường kẻ phân cách đẹp mắt.<br>• Danh sách dài (> 10-15 phần tử) phải có cơ chế phân trang (*Pagination*), bấm phím để xem trang tiếp theo/trước đó thay vì cuộn trôi màn hình. | **Đức**: Xây dựng component `UI_Table.cpp`<br>**Hiếu**: Ghép nối vào in Độc giả & Quá hạn |
+| **C5** | **Đồng bộ hóa quy chuẩn cho AI Coding Agent** | • Bổ sung quy định chuẩn vào `AGENTS.md` để bất kỳ AI Agent nào (hỗ trợ Hiếu hoặc hỗ trợ Đức) đều tự động tuân thủ nguyên tắc UX, chuẩn hóa chuỗi và bắt lỗi dữ liệu. | **Cả hai** |
+
+---
+
 ## 4. GIAO ƯỚC DỮ LIỆU & KIẾN TRÚC TOÀN HỆ THỐNG (CONTRACT)
 
 Để tránh xung đột khi code độc lập, hai bạn thống nhất cấu trúc file và thư mục chuẩn như sau:
