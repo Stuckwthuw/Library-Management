@@ -1,0 +1,72 @@
+#include "../DocGia.h"
+#include "../MuonTra.h"
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+
+using namespace std;
+
+// ============================================================================
+// PHÂN HỆ: GIAO DỊCH MƯỢN TRẢ
+// FILE: MuonTra_LietKe.cpp — Chức năng (h): Liệt kê sách đang mượn
+// PHỤ TRÁCH: LÊ VĂN HOÀNG HIẾU (N24DECE018)
+// ============================================================================
+
+// [HÀM LIỆT KÊ SÁCH ĐANG MƯỢN CỦA MỘT ĐỘC GIẢ]
+void LietKeSachDangMuon(TREE_DocGia root, int maThe) {
+  // Bước 1: Tìm độc giả trên cây BST
+  NodeDocGia *pDG = TimKiemDocGia(root, maThe);
+  if (pDG == nullptr) {
+    cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";
+    return;
+  }
+
+  // In thông tin độc giả
+  printf("\n===== DANH SACH SACH DANG MUON =====\n");
+  printf("Doc gia: %s %s (Ma the: %d)\n", pDG->data.ho, pDG->data.ten, maThe);
+
+  // Bước 2: Duyệt DSLK lọc các giao dịch đang mượn
+  NodeMuonTra *pCurr = pDG->data.dsMuonTra;
+  int stt = 0;
+
+  // In header bảng
+  printf(
+      "+-----+---------------+------------------------------+------------+\n");
+  printf(
+      "| STT |   Ma Sach     |         Ten Sach              | Ngay Muon  |\n");
+  printf(
+      "+-----+---------------+------------------------------+------------+\n");
+
+  while (pCurr != nullptr) {
+    if (pCurr->data.trangThai == 0) { // Đang mượn
+      stt++;
+
+      // Tách ISBN để tra cứu tên sách bên module Đức
+      char isbn[15];
+      TachISBN(pCurr->data.maSach, isbn);
+
+      // TODO: Khi ghép nối module Đức, thay đoạn stub này:
+      //   DauSach *pDS = TimDauSachTheoISBN(dsDS, isbn);
+      //   const char *tenSach = (pDS != nullptr) ? pDS->tenSach : "(Khong ro)";
+      const char *tenSach = "(Chua ghep noi DMS)"; // Stub tạm
+
+      // In dòng dữ liệu đã căn chỉnh
+      printf("| %-3d | %-13s | %-28s | %02d/%02d/%04d |\n", stt,
+             pCurr->data.maSach, tenSach, pCurr->data.ngayMuon.ngay,
+             pCurr->data.ngayMuon.thang, pCurr->data.ngayMuon.nam);
+    }
+    pCurr = pCurr->pNext;
+  }
+
+  printf(
+      "+-----+---------------+------------------------------+------------+\n");
+
+  if (stt == 0) {
+    printf("| Doc gia hien khong muon cuon sach nao.                          "
+           "|\n");
+    printf("+-----+---------------+------------------------------+------------+"
+           "\n");
+  } else {
+    printf("Tong cong: %d cuon dang muon.\n", stt);
+  }
+}
