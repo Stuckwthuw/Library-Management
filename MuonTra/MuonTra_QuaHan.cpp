@@ -19,15 +19,16 @@ using namespace std;
 // [HÀM ĐỆ QUY DUYỆT CÂY BST ĐẾM SÁCH QUÁ HẠN]
 // Duyệt toàn bộ cây BST (LNR), với mỗi độc giả duyệt DSLK mượn trả
 // tìm các sách đang mượn (trangThai == 0) có số ngày mượn > MAX_NGAY_MUON.
-void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, int &count) {
+// Tối ưu: Nhận mốc ngày hiện tại một lần duy nhất từ ngoài vào, tránh gọi time()
+// lặp đi lặp lại ở mỗi node.
+void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, const Date &homNay, int &count) {
   if (root == nullptr)
     return;
 
   // Duyệt cây con trái
-  DemTongSachQuaHan_DuyetCay(root->pLeft, count);
+  DemTongSachQuaHan_DuyetCay(root->pLeft, homNay, count);
 
   // Xử lý node hiện tại: duyệt DSLK mượn trả của độc giả này
-  Date homNay = LayNgayHienTai();
   NodeMuonTra *pCurr = root->data.dsMuonTra;
   while (pCurr != nullptr) {
     if (pCurr->data.trangThai == 0) { // Đang mượn
@@ -39,12 +40,19 @@ void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, int &count) {
   }
 
   // Duyệt cây con phải
-  DemTongSachQuaHan_DuyetCay(root->pRight, count);
+  DemTongSachQuaHan_DuyetCay(root->pRight, homNay, count);
+}
+
+// Wrapper tương thích nguyên mẫu
+void DemTongSachQuaHan_DuyetCay(TREE_DocGia root, int &count) {
+  Date homNay = LayNgayHienTai();
+  DemTongSachQuaHan_DuyetCay(root, homNay, count);
 }
 
 int DemTongSachQuaHan(TREE_DocGia root) {
   int count = 0;
-  DemTongSachQuaHan_DuyetCay(root, count);
+  Date homNay = LayNgayHienTai();
+  DemTongSachQuaHan_DuyetCay(root, homNay, count);
   return count;
 }
 
@@ -55,15 +63,15 @@ int DemTongSachQuaHan(TREE_DocGia root) {
 // [HÀM ĐỆ QUY NẠP DANH SÁCH QUÁ HẠN VÀO MẢNG]
 // Duyệt cây BST lần 2 (sau khi đã biết kích thước mảng), nạp thông
 // tin quá hạn vào mảng QuaHanInfo[] đã cấp phát đúng kích thước.
-void NapDanhSachQuaHan(TREE_DocGia root, QuaHanInfo arr[], int &index) {
+void NapDanhSachQuaHan(TREE_DocGia root, const Date &homNay, QuaHanInfo arr[],
+                       int &index) {
   if (root == nullptr)
     return;
 
   // Duyệt cây con trái (LNR)
-  NapDanhSachQuaHan(root->pLeft, arr, index);
+  NapDanhSachQuaHan(root->pLeft, homNay, arr, index);
 
   // Xử lý node hiện tại
-  Date homNay = LayNgayHienTai();
   NodeMuonTra *pCurr = root->data.dsMuonTra;
   while (pCurr != nullptr) {
     if (pCurr->data.trangThai == 0) { // Đang mượn
@@ -83,7 +91,13 @@ void NapDanhSachQuaHan(TREE_DocGia root, QuaHanInfo arr[], int &index) {
   }
 
   // Duyệt cây con phải
-  NapDanhSachQuaHan(root->pRight, arr, index);
+  NapDanhSachQuaHan(root->pRight, homNay, arr, index);
+}
+
+// Wrapper tương thích nguyên mẫu
+void NapDanhSachQuaHan(TREE_DocGia root, QuaHanInfo arr[], int &index) {
+  Date homNay = LayNgayHienTai();
+  NapDanhSachQuaHan(root, homNay, arr, index);
 }
 
 // ############################################################################
@@ -167,8 +181,9 @@ void InDanhSachDocGiaQuaHan(TREE_DocGia root) {
   }
 
   // ── Bước 3: Nạp dữ liệu quá hạn vào mảng (duyệt cây lần 2) ──
+  Date homNay = LayNgayHienTai();
   int index = 0;
-  NapDanhSachQuaHan(root, arr, index);
+  NapDanhSachQuaHan(root, homNay, arr, index);
 
   // ── Bước 4: QuickSort giảm dần theo soNgayQuaHan ──
   if (index > 1) // Chỉ cần sắp xếp khi có ≥ 2 phần tử

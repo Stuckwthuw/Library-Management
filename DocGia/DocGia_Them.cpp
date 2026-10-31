@@ -6,12 +6,19 @@ using namespace std;
 // ============================================================================
 // PHÂN HỆ: QUẢN LÝ THẺ ĐỘC GIẢ (CÂY NHỊ PHÂN TÌM KIẾM - BST)
 // FILE: DocGia_Them.cpp - Chức năng Thêm thẻ độc giả mới vào cây BST
+// PHỤ TRÁCH: LÊ VĂN HOÀNG HIẾU (N24DECE018)
 // ============================================================================
 
 // [HÀM THÊM ĐỘC GIẢ MỚI VÀO CÂY BST - ĐỆ QUY]
 // Giải thuật: Đệ quy so sánh maThe với khóa node hiện tại để tìm vị trí lá
 // trống phù hợp rồi cấp phát động và cắm node mới vào đó.
+// Tối ưu nhập liệu: Tự động chuẩn hóa Họ và Tên (Title Case, trim space)
+// trước khi lưu vào node cây.
 bool ThemDocGia(TREE_DocGia &root, TheDocGia dg) {
+  // Chuẩn hóa định dạng Họ và Tên độc giả trước khi đưa vào cây
+  DinhDangHoTen(dg.ho);
+  DinhDangHoTen(dg.ten);
+
   if (root == nullptr) {
     // Tìm được vị trí lá trống phù hợp, tiến hành cấp phát node mới
     NodeDocGia *pNew = new NodeDocGia;
