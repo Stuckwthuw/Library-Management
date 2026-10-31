@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CauTruc.h"
+#include "Date.h"
+#include "DauSach.h"
+#include "DanhMucSach.h"
 
 // ============================================================================
 // PHÂN HỆ: GIAO DỊCH MƯỢN TRẢ (DANH SÁCH LIÊN KẾT ĐƠN)
@@ -28,10 +31,14 @@ enum KetQuaKiemTraMuon {
 // NHÓM 1: HÀM PHỤ TRỢ NỘI BỘ (MuonTra_Core.cpp)
 // ----------------------------------------------------------------------------
 
-// [STUB TẠM THỜI — Sẽ thay bằng module Date của Đức khi ghép nối]
-Date LayNgayHienTai_Stub();
+// [HÀM LẤY NGÀY HIỆN TẠI — KẾT NỐI CHÍNH THỨC MODULE DATE CỦA ĐỨC]
+Date LayNgayHienTai();
 
-// Tính khoảng cách ngày giữa 2 mốc Date (d2 - d1), đơn vị: ngày
+// [HÀM TÍNH KHOẢNG CÁCH NGÀY (d2 - d1) — KẾT NỐI CHÍNH THỨC MODULE DATE CỦA ĐỨC]
+int TinhKhoangCachNgay(Date d1, Date d2);
+
+// [CÁC HÀM TƯƠNG THÍCH NGƯỢC TỪ GIAI ĐOẠN STUB]
+Date LayNgayHienTai_Stub();
 int TinhKhoangCachNgay_Stub(Date d1, Date d2);
 
 // [HÀM ĐẾM SỐ SÁCH ĐANG MƯỢN CỦA MỘT ĐỘC GIẢ]
@@ -51,21 +58,30 @@ void TachISBN(const char *maSach, char *isbn);
 // NHÓM 2: CHỨC NĂNG (f) — MƯỢN SÁCH (MuonTra_Muon.cpp)
 // ----------------------------------------------------------------------------
 
-// [HÀM MƯỢN SÁCH]
+// [HÀM MƯỢN SÁCH — PHIÊN BẢN GHÉP NỐI ĐẦY ĐỦ DMS]
 // Bẫy 3 điều kiện: thẻ mở, < 3 cuốn, không quá hạn.
+// Kiểm tra mã sách tồn tại trong DMS của Đức và đang ở trạng thái 0 (cho mượn).
 // Chèn NodeMuonTra vào ĐẦU DSLK dsMuonTra: O(1).
+// Cập nhật trạng thái sách trong DMS sang 1 (đã mượn).
+bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe, const char *maSach);
+
+// [HÀM MƯỢN SÁCH — PHIÊN BẢN ĐỘC LẬP / KIỂM THỬ KHÔNG CẦN DMS]
 bool MuonSach(TREE_DocGia root, int maThe, const char *maSach);
 
 // ----------------------------------------------------------------------------
 // NHÓM 3: CHỨC NĂNG (g) — TRẢ SÁCH / BÁO MẤT (MuonTra_Tra.cpp)
 // ----------------------------------------------------------------------------
 
-// [HÀM TRẢ SÁCH]
-// Tìm giao dịch đang mượn → đổi trangThai = 1, ghi ngayTra
+// [HÀM TRẢ SÁCH — PHIÊN BẢN GHÉP NỐI ĐẦY ĐỦ DMS]
+// Tìm giao dịch đang mượn → đổi trangThai = 1, ghi ngayTra = ngày hiện tại
+// Cập nhật trạng thái sách trong DMS của Đức về 0 (cho mượn lại)
+bool TraSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe, const char *maSach);
 bool TraSach(TREE_DocGia root, int maThe, const char *maSach);
 
-// [HÀM BÁO MẤT SÁCH]
-// Tìm giao dịch đang mượn → đổi trangThai = 2, sách DMS → thanh lý
+// [HÀM BÁO MẤT SÁCH — PHIÊN BẢN GHÉP NỐI ĐẦY ĐỦ DMS]
+// Tìm giao dịch đang mượn → đổi trangThai = 2, ghi ngayTra = ngày hiện tại
+// Cập nhật trạng thái sách trong DMS của Đức sang 2 (thanh lý)
+bool BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe, const char *maSach);
 bool BaoMatSach(TREE_DocGia root, int maThe, const char *maSach);
 
 // ----------------------------------------------------------------------------
@@ -73,7 +89,8 @@ bool BaoMatSach(TREE_DocGia root, int maThe, const char *maSach);
 // ----------------------------------------------------------------------------
 
 // [HÀM LIỆT KÊ SÁCH ĐANG MƯỢN CỦA MỘT ĐỘC GIẢ]
-// Duyệt DSLK lọc trangThai == 0, tra cứu tên sách từ module Đức
+// Duyệt DSLK lọc trangThai == 0, tra cứu tên sách từ dsDS của Đức để in bảng
+void LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS, int maThe);
 void LietKeSachDangMuon(TREE_DocGia root, int maThe);
 
 // ----------------------------------------------------------------------------
