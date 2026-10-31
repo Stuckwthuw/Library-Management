@@ -12,9 +12,17 @@
 using namespace std;
 
 // ============================================================================
-// CHƯƠNG TRÌNH DEMO TƯƠNG TÁC CONSOLE TERMINAL (GIAI ĐOẠN 3)
-// Đầy đủ 10 nhóm chức năng nghiệp vụ (từ a đến j theo đề tài)
-// Phối hợp đồng bộ giữa phân hệ của Hiếu và phân hệ của Đức
+// ĐỒ ÁN CẤU TRÚC DỮ LIỆU & GIẢI THUẬT: QUẢN LÝ THƯ VIỆN (C++)
+// FILE DÙNG CHUNG: main.cpp — ĐIỂM KHỞI CHẠY, MENU ĐIỀU HƯỚNG & QUẢN LÝ BỘ NHỚ
+// NHÓM THỰC HIỆN:
+//   - Lê Văn Hoàng Hiếu (N24DECE018) — Thẻ Độc Giả & Mượn Trả
+//   - Lê Anh Đức        (N24DECE012) — Đầu Sách, Danh Mục Sách, Date & Core UI
+// ============================================================================
+// Ghi chú tích hợp UI:
+//   Hiện tại main.cpp sử dụng giao diện dòng lệnh tương tác tiêu chuẩn (CLI Menu).
+//   Khi Đức hoàn thiện phân hệ UI console nâng cao (UI.h, UI_Menu.cpp điều hướng
+//   bằng phím mũi tên và vẽ khung viền), có thể thay thế vòng lặp Menu bằng
+//   hàm của UI mà không cần sửa đổi các hàm gọi nghiệp vụ bên dưới.
 // ============================================================================
 
 void XoaManHinh() {
@@ -35,15 +43,15 @@ void XoaBoDemCin() {
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 }
 
-// ----------------------------------------------------------------------------
-// GIAO DIỆN CÁC CHỨC NĂNG CON
-// ----------------------------------------------------------------------------
+// ============================================================================
+// 1. NHÓM CHỨC NĂNG QUẢN LÝ THẺ ĐỘC GIẢ (HIẾU PHỤ TRÁCH)
+// ============================================================================
 
-void Menu_ThemDocGia(TREE_DocGia &root) {
-  cout << "\n--- THEM THE DOC GIA MOI ---\n";
+void ChucNang_ThemDocGia(TREE_DocGia &root) {
+  cout << "\n--- [A]. THEM THE DOC GIA MOI ---\n";
   TheDocGia dg;
   dg.maThe = SinhMaTheTuDong(root);
-  cout << "-> Ma the tu dong sinh (LCG): " << dg.maThe << "\n";
+  cout << "-> Ma the tu dong cap (LCG chu ky day): " << dg.maThe << "\n";
 
   cout << "Nhap ho va ten dem: ";
   cin.getline(dg.ho, sizeof(dg.ho));
@@ -65,7 +73,7 @@ void Menu_ThemDocGia(TREE_DocGia &root) {
   XoaBoDemCin();
   strcpy(dg.phai, (chonPhai == 2) ? "Nu" : "Nam");
 
-  dg.trangThai = 1; // 1 = Hoạt động
+  dg.trangThai = 1; // 1 = Đang hoạt động
   dg.dsMuonTra = nullptr;
 
   if (ThemDocGia(root, dg)) {
@@ -74,8 +82,8 @@ void Menu_ThemDocGia(TREE_DocGia &root) {
   }
 }
 
-void Menu_HieuChinhDocGia(TREE_DocGia root) {
-  cout << "\n--- HIEU CHINH THONG TIN DOC GIA ---\n";
+void ChucNang_HieuChinhDocGia(TREE_DocGia root) {
+  cout << "\n--- [A]. HIEU CHINH THONG TIN DOC GIA ---\n";
   int maThe;
   cout << "Nhap ma the can hieu chinh: ";
   if (!(cin >> maThe)) {
@@ -124,8 +132,8 @@ void Menu_HieuChinhDocGia(TREE_DocGia root) {
   }
 }
 
-void Menu_XoaDocGia(TREE_DocGia &root) {
-  cout << "\n--- XOA THE DOC GIA ---\n";
+void ChucNang_XoaDocGia(TREE_DocGia &root) {
+  cout << "\n--- [A]. XOA THE DOC GIA (CAY BST) ---\n";
   int maThe;
   cout << "Nhap ma the can xoa: ";
   if (!(cin >> maThe)) {
@@ -148,8 +156,12 @@ void Menu_XoaDocGia(TREE_DocGia &root) {
   }
 }
 
-void Menu_ThemDauSach(DanhSachDauSach &dsDS) {
-  cout << "\n--- THEM DAU SACH MOI ---\n";
+// ============================================================================
+// 2. NHÓM CHỨC NĂNG QUẢN LÝ ĐẦU SÁCH & DMS (ĐỨC PHỤ TRÁCH)
+// ============================================================================
+
+void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
+  cout << "\n--- [C]. THEM DAU SACH MOI (MANG CON TRO) ---\n";
   if (dauSachDay(dsDS)) {
     cout << "[LOI] Danh sach dau sach da day (MAX = 10000)!\n";
     return;
@@ -210,8 +222,8 @@ void Menu_ThemDauSach(DanhSachDauSach &dsDS) {
   }
 }
 
-void Menu_ThemBanSao(DanhSachDauSach &dsDS) {
-  cout << "\n--- THEM BAN SAO SACH CON VAO DANH MUC SACH (DMS) ---\n";
+void ChucNang_ThemBanSao(DanhSachDauSach &dsDS) {
+  cout << "\n--- [C]. THEM BAN SAO SACH CON VAO DANH MUC SACH (DMS) ---\n";
   char isbn[15];
   cout << "Nhap ISBN cua dau sach can them ban sao: ";
   cin.getline(isbn, sizeof(isbn));
@@ -236,8 +248,8 @@ void Menu_ThemBanSao(DanhSachDauSach &dsDS) {
   }
 }
 
-void Menu_TimKiemSach(const DanhSachDauSach &dsDS) {
-  cout << "\n--- TRA CUU THONG TIN SACH ---\n";
+void ChucNang_TimKiemSach(const DanhSachDauSach &dsDS) {
+  cout << "\n--- [E]. TRA CUU THONG TIN SACH THEO TEN ---\n";
   char tuKhoa[100];
   cout << "Nhap ten sach can tim (chua tu khoa): ";
   cin.getline(tuKhoa, sizeof(tuKhoa));
@@ -271,8 +283,8 @@ void Menu_TimKiemSach(const DanhSachDauSach &dsDS) {
   }
 }
 
-void Menu_InSachTheoTheLoai(const DanhSachDauSach &dsDS) {
-  cout << "\n--- IN DANH SACH DAU SACH THEO THE LOAI ---\n";
+void ChucNang_InSachTheoTheLoai(const DanhSachDauSach &dsDS) {
+  cout << "\n--- [D]. IN DANH SACH DAU SACH THEO TUNG THE LOAI ---\n";
   if (dsDS.n == 0) {
     cout << "[THONG BAO] Thu vien chua co dau sach nao.\n";
     return;
@@ -298,8 +310,12 @@ void Menu_InSachTheoTheLoai(const DanhSachDauSach &dsDS) {
   }
 }
 
-void Menu_MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
-  cout << "\n--- GIAO DICH MUON SACH ---\n";
+// ============================================================================
+// 3. NHÓM CHỨC NĂNG GIAO DỊCH MƯỢN TRẢ & THỐNG KÊ (PHỐI HỢP CẢ HAI)
+// ============================================================================
+
+void ChucNang_MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
+  cout << "\n--- [F]. GIAO DICH MUON SACH ---\n";
   int maThe;
   char maSach[20];
   cout << "Nhap ma the doc gia: ";
@@ -316,8 +332,8 @@ void Menu_MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   MuonSach(root, dsDS, maThe, maSach);
 }
 
-void Menu_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
-  cout << "\n--- GIAO DICH TRA SACH ---\n";
+void ChucNang_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
+  cout << "\n--- [G]. GIAO DICH TRA SACH ---\n";
   int maThe;
   char maSach[20];
   cout << "Nhap ma the doc gia tra sach: ";
@@ -334,8 +350,8 @@ void Menu_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   TraSach(root, dsDS, maThe, maSach);
 }
 
-void Menu_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
-  cout << "\n--- BAO MAT SACH ---\n";
+void ChucNang_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
+  cout << "\n--- [G]. BAO MAT SACH (THANH LY) ---\n";
   int maThe;
   char maSach[20];
   cout << "Nhap ma the doc gia: ";
@@ -352,8 +368,8 @@ void Menu_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   BaoMatSach(root, dsDS, maThe, maSach);
 }
 
-void Menu_LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS) {
-  cout << "\n--- LIET KE SACH DOC GIA DANG MUON ---\n";
+void ChucNang_LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS) {
+  cout << "\n--- [H]. LIET KE SACH DOC GIA DANG MUON ---\n";
   int maThe;
   cout << "Nhap ma the doc gia: ";
   if (!(cin >> maThe)) {
@@ -366,8 +382,8 @@ void Menu_LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS) {
   LietKeSachDangMuon(root, dsDS, maThe);
 }
 
-void Menu_Top10(const DanhSachDauSach &dsDS, const NodeDocGia *root) {
-  cout << "\n--- TOP 10 DAU SACH CO LUOT MUON NHIEU NHAT ---\n";
+void ChucNang_Top10(const DanhSachDauSach &dsDS, const NodeDocGia *root) {
+  cout << "\n--- [J]. TOP 10 DAU SACH CO LUOT MUON NHIEU NHAT ---\n";
   if (dsDS.n == 0) {
     cout << "[THONG BAO] Thu vien chua co dau sach nao.\n";
     return;
@@ -391,7 +407,7 @@ void Menu_Top10(const DanhSachDauSach &dsDS, const NodeDocGia *root) {
 }
 
 // ============================================================================
-// HÀM MAIN CHÍNH
+// HÀM MAIN CHÍNH — KHỞI CHẠY & ĐIỀU HƯỚNG CHƯƠNG TRÌNH
 // ============================================================================
 
 int main() {
@@ -446,21 +462,21 @@ int main() {
     XoaBoDemCin();
 
     switch (luaChon) {
-    case 1:  Menu_ThemDocGia(root); break;
+    case 1:  ChucNang_ThemDocGia(root); break;
     case 2:  InDanhSachDocGia_TheoMaThe(root); break;
     case 3:  InDanhSachDocGia_TheoTenHo(root); break;
-    case 4:  Menu_HieuChinhDocGia(root); break;
-    case 5:  Menu_XoaDocGia(root); break;
-    case 6:  Menu_ThemDauSach(dsDS); break;
-    case 7:  Menu_ThemBanSao(dsDS); break;
-    case 8:  Menu_InSachTheoTheLoai(dsDS); break;
-    case 9:  Menu_TimKiemSach(dsDS); break;
-    case 10: Menu_MuonSach(root, dsDS); break;
-    case 11: Menu_TraSach(root, dsDS); break;
-    case 12: Menu_BaoMatSach(root, dsDS); break;
-    case 13: Menu_LietKeSachDangMuon(root, dsDS); break;
+    case 4:  ChucNang_HieuChinhDocGia(root); break;
+    case 5:  ChucNang_XoaDocGia(root); break;
+    case 6:  ChucNang_ThemDauSach(dsDS); break;
+    case 7:  ChucNang_ThemBanSao(dsDS); break;
+    case 8:  ChucNang_InSachTheoTheLoai(dsDS); break;
+    case 9:  ChucNang_TimKiemSach(dsDS); break;
+    case 10: ChucNang_MuonSach(root, dsDS); break;
+    case 11: ChucNang_TraSach(root, dsDS); break;
+    case 12: ChucNang_BaoMatSach(root, dsDS); break;
+    case 13: ChucNang_LietKeSachDangMuon(root, dsDS); break;
     case 14: InDanhSachDocGiaQuaHan(root); break;
-    case 15: Menu_Top10(dsDS, root); break;
+    case 15: ChucNang_Top10(dsDS, root); break;
     case 0:
       cout << "\nDang luu du lieu xuong dia...\n";
       GhiFileDocGia(root, fileDocGia);
