@@ -11,48 +11,27 @@
 // ----------------------------------------------------------------------------
 
 // [HÀM KIỂM TRA CHUỖI RỖNG]
-// Mục đích: Trả về true nếu chuỗi nullptr hoặc chỉ chứa toàn ký tự khoảng trắng.
 bool KiemTraChuoiRong(const char *s);
 
 // [HÀM CHUẨN HÓA KHOẢNG TRẮNG]
-// Mục đích: Cắt tỉa (trim) khoảng trắng ở đầu và cuối chuỗi,
-// rút gọn nhiều khoảng trắng liên tiếp ở giữa thành đúng 1 khoảng trắng duy nhất.
 void ChuanHoaKhoangTrang(char *s);
 
 // [HÀM ĐỊNH DẠNG TÊN / TITLE CASE]
-// Mục đích: Tự động chuẩn hóa khoảng trắng và viết hoa chữ cái đầu tiên của mỗi từ,
-// các chữ cái còn lại chuyển thành chữ thường.
-// Ví dụ: "   nGuyeN    vAn   a  " -> "Nguyen Van A"
 void DinhDangHoTen(char *s);
 
 // [HÀM CHUẨN HÓA MÃ KÝ HIỆU]
-// Mục đích: Dùng cho ISBN, Mã Sách: xóa toàn bộ khoảng trắng thừa và chuyển thành chữ IN HOA.
-// Ví dụ: "  cs101_1  " -> "CS101_1"
 void ChuanHoaMa(char *s);
 
 // [HÀM PHÂN TÍCH LỖI HỌ TÊN]
-// Mục đích: Kiểm tra chuỗi họ hoặc tên có chứa chữ số (0-9) hay ký tự đặc biệt (!@#$...) không.
-// Hỗ trợ tiếng Việt có dấu UTF-8 và cho phép khoảng trắng giữa các từ.
-// Trả về: 
-//   0 = Hợp lệ.
-//   1 = Chuỗi rỗng hoặc chỉ toàn khoảng trắng.
-//   2 = Chứa chữ số (0-9), lưu ký tự vi phạm vào kyTuViPham.
-//   3 = Chứa ký tự đặc biệt, lưu ký tự vi phạm vào kyTuViPham.
-//   4 = Chuỗi không chứa chữ cái nào.
 int KiemTraLoiHoTen(const char *s, char &kyTuViPham);
 
 // [HÀM KIỂM TRA CHỈ CHỨA CHỮ CÁI VÀ KHOẢNG TRẮNG]
-// Mục đích: Xác thực nhanh họ tên độc giả (chấp nhận chữ cái Latin, tiếng Việt và khoảng trắng).
-// Bẫy lỗi: Chặn triệt để chữ số (0-9) và ký tự đặc biệt.
 bool KiemTraChuCaiVaKhoangTrang(const char *s);
 
 // [HÀM KIỂM TRA ĐỊNH DẠNG MÃ SÁCH CON]
-// Mục đích: Kiểm tra mã sách mượn có tuân thủ đúng cấu trúc [ISBN]_[STT] hay không.
-// Ví dụ hợp lệ: "CS101_1", "TH01_12". Ví dụ sai: "CS101" (thiếu _), "_1", "CS101_abc".
 bool KiemTraDinhDangMaSach(const char *maSach);
 
 // [HÀM KIỂM TRA CHỨA CHUỖI CON KHÔNG PHÂN BIỆT HOA THƯỜNG]
-// Mục đích: Dùng cho tra cứu tìm kiếm: so sánh chuỗi không phân biệt ký tự hoa/thường.
 bool ChuaChuoiConKhongPhanBietHoaThuong(const char *str, const char *subStr);
 
 // ----------------------------------------------------------------------------
@@ -66,18 +45,12 @@ void KhoiTaoCay(TREE_DocGia &root);
 bool KiemTraCayRong(TREE_DocGia root);
 
 // [HÀM ĐẾM TỔNG SỐ LƯỢNG ĐỘC GIẢ]
-// Mục đích: Đếm số lượng node hiện có trên cây BST bằng giải thuật đệ quy.
 int DemSoLuongDocGia(TREE_DocGia root);
 
 // [HÀM GIẢI PHÓNG DSLK MƯỢN TRẢ CỦA MỘT ĐỘC GIẢ]
-// Mục đích: Thu hồi bộ nhớ danh sách liên kết mượn trả khi xóa một độc giả hoặc khi giải phóng toàn bộ cây.
 void GiaiPhongDSMuonTra(NodeMuonTra *&dsMuonTra);
 
 // [HÀM GIẢI PHÓNG TOÀN BỘ BỘ NHỚ CỦA CÂY BST]
-// Mục đích: Thu hồi toàn bộ bộ nhớ đã cấp phát động (tránh rò rỉ bộ nhớ -
-// Memory Leak). Giải thuật: Duyệt hậu thứ tự (Post-order: LRN - Trái -> Phải ->
-// Gốc). Chú ý: Trước khi delete mỗi NodeDocGia, bắt buộc phải duyệt giải phóng
-// toàn bộ DSLK dsMuonTra gắn với độc giả đó. Cuối cùng gán root = nullptr.
 void GiaiPhongCayDocGia(TREE_DocGia &root);
 
 // ----------------------------------------------------------------------------
@@ -85,27 +58,16 @@ void GiaiPhongCayDocGia(TREE_DocGia &root);
 // ----------------------------------------------------------------------------
 
 // [HÀM TÌM KIẾM ĐỘC GIẢ THEO MÃ THẺ]
-// Mục đích: Tìm kiếm một node trong cây BST dựa vào khóa chính maThe.
-// Giải thuật: Tìm kiếm nhị phân trên cây BST (O(log N) trung bình, O(N) tệ nhất).
 NodeDocGia *TimKiemDocGia(TREE_DocGia root, int maThe);
 
 // [HÀM KIỂM TRA MÃ THẺ TỒN TẠI]
-// Mục đích: Kiểm tra nhanh xem maThe đã có trong hệ thống hay chưa.
-// Trả về: true nếu đã tồn tại, false nếu chưa có.
 bool KiemTraMaTheTonTai(TREE_DocGia root, int maThe);
 
 // [HÀM TÌM KIẾM ĐỘC GIẢ THEO TÊN HOẶC HỌ TÊN (KHÔNG PHÂN BIỆT HOA THƯỜNG)]
-// Mục đích: Tìm kiếm toàn bộ độc giả có Họ hoặc Tên chứa từ khóa tìm kiếm.
-// Kết quả được đổ vào mảng con trỏ arr[], trả về số lượng kết quả tìm được.
-int TimKiemDocGiaTheoTen(TREE_DocGia root, const char *tuKhoa, TheDocGia *arr[], int maxKetQua);
+int TimKiemDocGiaTheoTen(TREE_DocGia root, const char *tuKhoa, TheDocGia *arr[],
+                         int maxKetQua);
 
 // [HÀM SINH MÃ THẺ TỰ ĐỘNG - BỘ SINH ĐỒNG DƯ TUYẾN TÍNH CHU KỲ ĐẦY]
-// Mục đích: Tự động cấp mã thẻ duy nhất, phân bố giả ngẫu nhiên để cây BST
-//   gần cân bằng mà không cần dùng cây AVL.
-// Giải thuật: Full-Period Linear Congruential Generator (Định lý Hull-Dobell).
-//   Công thức: X_{n+1} = (a * X_n + c) mod M
-//   Đảm bảo: Ghé thăm đúng M giá trị khác nhau trước khi lặp lại → O(1) mỗi lần
-//   sinh, không bao giờ tự trùng trong cùng một phiên chạy.
 int SinhMaTheTuDong(TREE_DocGia root);
 
 // ----------------------------------------------------------------------------
@@ -113,40 +75,22 @@ int SinhMaTheTuDong(TREE_DocGia root);
 // ----------------------------------------------------------------------------
 
 // [HÀM KIỂM TRA ĐỘC GIẢ CÓ ĐANG MƯỢN SÁCH HAY KHÔNG]
-// Mục đích: Ràng buộc an toàn - Độc giả đang giữ sách thì KHÔNG ĐƯỢC XÓA THẺ.
-// Giải thuật: Duyệt DSLK dsMuonTra của độc giả, tìm xem có node nào mang
-// trangThai == 0. Trả về: true nếu đang mượn (chưa trả), false nếu đã trả hết
-// hoặc chưa mượn cuốn nào.
 bool KiemTraDocGiaDangMuonSach(NodeDocGia *pDG);
 
 // [HÀM THÊM ĐỘC GIẢ MỚI VÀO CÂY BST]
-// Mục đích: Thêm một thẻ độc giả mới vào cây theo đúng quy tắc BST.
+
 bool ThemDocGia(TREE_DocGia &root, TheDocGia dg);
 
 // [HÀM HIỆU CHỈNH THÔNG TIN ĐỘC GIẢ]
-// Mục đích: Cập nhật thông tin họ tên, phái hoặc trạng thái khóa/mở của thẻ.
-// Lưu ý bảo toàn cấu trúc: maThe là KHÓA của cây BST nên TUYỆT ĐỐI KHÔNG ĐƯỢC
-// SỬA maThe.
 bool HieuChinhDocGia(TREE_DocGia root, int maThe, const char *ho,
                      const char *ten, const char *phai, int trangThai);
 
 // [HÀM TÌM NODE THẾ MẠNG CHO THUẬT TOÁN XÓA NODE 2 CON TRÊN CÂY BST]
 // Mục đích: Khi xóa một node có 2 con, cần tìm một node thay thế sao cho không
-// phá vỡ tính chất cây BST. Lựa chọn: Tìm node CỰC TRÁI của cây con BÊN PHẢI
-// (phần tử nhỏ nhất bên nhánh phải). Tham số:
-//   - X: Node cần xóa (node có 2 con).
-//   - Y: Node duyệt đi tìm node thế mạng (bắt đầu từ X->pRight).
+// phá vỡ tính chất cây BST.
 void TimNodeTheMang(NodeDocGia *&X, NodeDocGia *&Y);
 
 // [HÀM XÓA THẺ ĐỘC GIẢ KHỎI CÂY BST]
-// Mục đích: Xóa một độc giả khỏi cây BST dựa vào maThe.
-// Ràng buộc kiểm tra trước: Phải gọi KiemTraDocGiaDangMuonSach trước; nếu đang
-// giữ sách thì từ chối. 3 trường hợp xóa node BST:
-//   1. Node cần xóa là Node lá (không có con): delete trực tiếp.
-//   2. Node cần xóa chỉ có 1 con (trái hoặc phải): nối cha với con của nó rồi
-//   delete.
-//   3. Node cần xóa có đủ 2 con: gọi TimNodeTheMang để hoán đổi dữ liệu rồi
-//   xóa.
 bool XoaDocGia(TREE_DocGia &root, int maThe);
 
 // ----------------------------------------------------------------------------
@@ -154,30 +98,18 @@ bool XoaDocGia(TREE_DocGia &root, int maThe);
 // ----------------------------------------------------------------------------
 
 // [CHẾ ĐỘ 1: IN DANH SÁCH THEO MÃ THẺ TĂNG DẦN]
-// Mục đích: Xuất danh sách toàn bộ độc giả có thứ tự maThe tăng dần.
-// Giải thuật: Duyệt trung thứ tự (In-order traversal: LNR - Trái -> Gốc ->
-// Phải). Vì tính chất BST, duyệt LNR luôn cho thứ tự tăng dần tự nhiên mà không
-// cần sắp xếp.
 void InDanhSachDocGia_TheoMaThe(TREE_DocGia root);
 
 // [HÀM PHỤ TRỢ: ĐỔ TOÀN BỘ NODE TRÊN CÂY BST VÀO MẢNG CON TRỎ TẠM]
-// Mục đích: Lấy toàn bộ địa chỉ node độc giả đưa vào mảng để chuẩn bị sắp xếp
-// theo Tên + Họ.
 void DoCayVaoMang(TREE_DocGia root, TheDocGia *arr[], int &index);
 
 // [HÀM SO SÁNH TÊN VÀ HỌ CỦA 2 ĐỘC GIẢ]
-// Mục đích: Tiêu chuẩn sắp xếp: Tên tăng dần (A-Z). Nếu trùng tên thì xét đến
-// Họ tăng dần.
 int SoSanhTenHo(const TheDocGia *a, const TheDocGia *b);
 
 // [THUẬT TOÁN QUICKSORT]
-// Mục đích: Sắp xếp mảng con trỏ độc giả arr[] từ vị trí left đến right theo
-// Tên + Họ tăng dần.
 void QuickSortDocGia(TheDocGia *arr[], int left, int right);
 
 // [CHẾ ĐỘ 2: IN DANH SÁCH THEO TÊN + HỌ TĂNG DẦN]
-// Mục đích: Xuất danh sách độc giả sắp xếp theo thứ tự bảng chữ cái của Tên,
-// trùng Tên thì xét Họ.
 void InDanhSachDocGia_TheoTenHo(TREE_DocGia root);
 
 // ----------------------------------------------------------------------------
@@ -185,13 +117,7 @@ void InDanhSachDocGia_TheoTenHo(TREE_DocGia root);
 // ----------------------------------------------------------------------------
 
 // [HÀM GHI TOÀN BỘ CÂY ĐỘC GIẢ VÀO FILE]
-// Mục đích: Lưu trữ toàn bộ thông tin thẻ độc giả và lịch sử mượn trả khi đóng
-// chương trình. Đường dẫn mặc định: "Data/DocGia.txt"
-// Giải thuật: Duyệt tiền thứ tự (Pre-order: NLR - Gốc -> Trái -> Phải) để khi
-// đọc lại nạp vào cây sẽ giữ nguyên cấu trúc phân nhánh BST ban đầu.
 bool GhiFileDocGia(TREE_DocGia root, const char *filePath = "Data/DocGia.txt");
 
 // [HÀM ĐỌC TOÀN BỘ DỮ LIỆU ĐỘC GIẢ TỪ FILE]
-// Mục đích: Phục hồi lại cây BST Thẻ Độc Giả và các DSLK Mượn TrẢ khi khởi động
-// chương trình. Đường dẫn mặc định: "Data/DocGia.txt"
 bool DocFileDocGia(TREE_DocGia &root, const char *filePath = "Data/DocGia.txt");
