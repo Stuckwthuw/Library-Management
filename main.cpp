@@ -4,6 +4,7 @@
 #include "DauSach.h"
 #include "DocGia.h"
 #include "MuonTra.h"
+#include "UI.h"
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -25,6 +26,33 @@ using namespace std;
 // Đường dẫn file lưu trữ chuẩn của dự án
 const char *FILE_DOCGIA  = "Data/DocGia.txt";
 const char *FILE_DAUSACH = "Data/DauSach.txt";
+
+static TheDocGia **dsBangDocGia = nullptr;
+static void LayODocGia(int dong, int cot, char *buf, int maxLen) {
+  const TheDocGia *dg = dsBangDocGia[dong];
+  switch (cot) {
+  case 0: snprintf(buf, maxLen, "%d", dong + 1); break;
+  case 1: snprintf(buf, maxLen, "%d", dg->maThe); break;
+  case 2: snprintf(buf, maxLen, "%s %s", dg->ho, dg->ten); break;
+  case 3: snprintf(buf, maxLen, "%s", dg->phai); break;
+  default: snprintf(buf, maxLen, "%s", dg->trangThai == 1 ? "Hoat dong" : "Bi khoa");
+  }
+}
+
+// Mảng chỉ mượn địa chỉ trong cây; duyệt LNR giữ thứ tự mã và không sao chép dữ liệu.
+static void BangDocGia(TREE_DocGia root, bool theoTen) {
+  int n = DemSoLuongDocGia(root);
+  if (n == 0) { cout << "[THONG BAO] Khong co du lieu de hien thi.\n"; return; }
+  dsBangDocGia = new TheDocGia*[n];
+  int index = 0;
+  DoCayVaoMang(root, dsBangDocGia, index);
+  if (theoTen && n > 1) QuickSortDocGia(dsBangDocGia, 0, n - 1);
+  const CauHinhCot cot[] = {{"STT", 4}, {"MA THE", 8}, {"HO VA TEN", 32},
+                            {"PHAI", 5}, {"TRANG THAI", 12}};
+  HienThiBangPhanTrang("DANH SACH DOC GIA", cot, 5, LayODocGia, n);
+  delete[] dsBangDocGia;
+  dsBangDocGia = nullptr;
+}
 
 // ============================================================================
 // CÁC HÀM TIỆN ÍCH GIAO DIỆN & NHẬP LIỆU AN TOÀN
@@ -69,6 +97,8 @@ void NhapChuoiAnToan(char *buf, int maxLen, const char *prompt = nullptr) {
 bool NhapSoNguyenAnToan(int &val, int minVal, int maxVal, const char *prompt) {
   cout << prompt;
   if (!(cin >> val)) {
+    // Giữ cờ EOF để vòng nhập lại có thể dừng khi luồng đầu vào đóng.
+    if (cin.eof()) return false;
     XoaBoDemCin();
     cout << "[LOI] Du lieu nhap vao phai la so nguyen!\n";
     return false;
@@ -435,57 +465,40 @@ void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
   }
 
   DauSach *moi = new DauSach{};
-  cout << "Nhap ISBN: ";
-  cin.getline(moi->ISBN, sizeof(moi->ISBN));
-  ChuanHoaMa(moi->ISBN);
-  if (KiemTraChuoiRong(moi->ISBN)) {
-    delete moi;
-    cout << "[LOI] ISBN khong duoc de trong!\n";
-    return;
+  while (true) {
+    NhapChuoiAnToan(moi->ISBN, sizeof(moi->ISBN), "Nhap ISBN: ");
+    ChuanHoaMa(moi->ISBN);
+    if (KiemTraChuoiRong(moi->ISBN)) cout << "[LOI] ISBN khong duoc de trong!\n";
+    else if (strchr(moi->ISBN, '_')) cout << "[LOI] ISBN khong duoc chua '_'!\n";
+    else if (timDauSachTheoISBN(dsDS, moi->ISBN)) cout << "[LOI] ISBN da ton tai!\n";
+    else break;
   }
 
-  if (timDauSachTheoISBN(dsDS, moi->ISBN)) {
-    delete moi;
-    cout << "[LOI] ISBN " << moi->ISBN << " da ton tai trong thu vien!\n";
-    return;
-  }
+  do {
+    NhapChuoiAnToan(moi->tenSach, sizeof(moi->tenSach), "Nhap ten sach: ");
+    ChuanHoaKhoangTrang(moi->tenSach);
+    if (KiemTraChuoiRong(moi->tenSach)) cout << "[LOI] Ten sach khong duoc de trong!\n";
+  } while (KiemTraChuoiRong(moi->tenSach));
 
-  cout << "Nhap ten sach: ";
-  cin.getline(moi->tenSach, sizeof(moi->tenSach));
-  ChuanHoaKhoangTrang(moi->tenSach);
-  if (KiemTraChuoiRong(moi->tenSach)) {
-    delete moi;
-    cout << "[LOI] Ten sach khong duoc de trong!\n";
-    return;
+  while (true) {
+    NhapChuoiAnToan(moi->tacGia, sizeof(moi->tacGia), "Nhap tac gia: ");
+    char kyTu = '\0';
+    if (KiemTraLoiHoTen(moi->tacGia, kyTu) == 0) break;
+    cout << "[LOI] Ten tac gia phai la chu cai va khong duoc de trong!\n";
   }
-
-  cout << "Nhap tac gia: ";
-  cin.getline(moi->tacGia, sizeof(moi->tacGia));
   DinhDangHoTen(moi->tacGia);
-  if (KiemTraChuoiRong(moi->tacGia)) {
-    delete moi;
-    cout << "[LOI] Ten tac gia khong duoc de trong!\n";
-    return;
-  }
 
-  cout << "Nhap the loai: ";
-  cin.getline(moi->theLoai, sizeof(moi->theLoai));
-  ChuanHoaKhoangTrang(moi->theLoai);
-  if (KiemTraChuoiRong(moi->theLoai)) {
-    delete moi;
-    cout << "[LOI] The loai khong duoc de trong!\n";
-    return;
-  }
+  do {
+    NhapChuoiAnToan(moi->theLoai, sizeof(moi->theLoai), "Nhap the loai: ");
+    ChuanHoaKhoangTrang(moi->theLoai);
+    if (!KiemTraChuCaiVaKhoangTrang(moi->theLoai))
+      cout << "[LOI] The loai phai chua chu cai!\n";
+  } while (!KiemTraChuCaiVaKhoangTrang(moi->theLoai));
 
-  if (!NhapSoNguyenAnToan(moi->soTrang, 1, 100000, "Nhap so trang (1 - 100000): ")) {
-    delete moi;
-    return;
-  }
-
-  if (!NhapSoNguyenAnToan(moi->namXuatBan, 1000, 2100, "Nhap nam xuat ban (1000 - 2100): ")) {
-    delete moi;
-    return;
-  }
+  while (!NhapSoNguyenAnToan(moi->soTrang, 1, 100000, "Nhap so trang (1 - 100000): "))
+    if (cin.eof()) { delete moi; return; }
+  while (!NhapSoNguyenAnToan(moi->namXuatBan, 1000, 2100, "Nhap nam xuat ban (1000 - 2100): "))
+    if (cin.eof()) { delete moi; return; }
 
   moi->dms = nullptr;
 
@@ -509,14 +522,18 @@ void ChucNang_ThemDauSach(DanhSachDauSach &dsDS) {
     cout << "[THANH CONG] Da them dau sach \"" << moi->tenSach
          << "\" vao danh sach!\n";
 
+    if (!ghiDauSach(dsDS, FILE_DAUSACH)) cout << "[LOI] Khong luu duoc dau sach!\n";
     if (XacNhanHanhDong("Ban co muon them ban sao sach ngay bay gio khong?")) {
       int soLuong = 1;
       char viTri[50];
       if (NhapSoNguyenAnToan(soLuong, 1, 1000, "Nhap so luong ban sao muon them (1 - 1000): ")) {
-        cout << "Nhap vi tri luu tru (VD: Ke A1 - Ngan 2): ";
-        cin.getline(viTri, sizeof(viTri));
-        ChuanHoaKhoangTrang(viTri);
-        if (themBanSao(*moi, soLuong, viTri)) {
+        do {
+          NhapChuoiAnToan(viTri, sizeof(viTri), "Nhap vi tri luu tru: ");
+          ChuanHoaKhoangTrang(viTri);
+          if (KiemTraChuoiRong(viTri)) cout << "[LOI] Vi tri khong duoc de trong!\n";
+        } while (KiemTraChuoiRong(viTri));
+        cout << "Ban sao: " << soLuong << " | Vi tri: " << viTri << '\n';
+        if (XacNhanHanhDong("Xac nhan them ban sao?") && themBanSao(*moi, soLuong, viTri)) {
           cout << "[THANH CONG] Da tao tu dong " << soLuong
                << " ban sao sach dang [" << moi->ISBN << "_1 -> " << moi->ISBN
                << "_" << soLuong << "].\n";
@@ -553,9 +570,13 @@ void ChucNang_ThemBanSao(DanhSachDauSach &dsDS) {
     return;
   }
 
-  cout << "Nhap vi tri dat sach tren ke (VD: Ke B2 - Ngan 1): ";
-  cin.getline(viTri, sizeof(viTri));
-  ChuanHoaKhoangTrang(viTri);
+  do {
+    NhapChuoiAnToan(viTri, sizeof(viTri), "Nhap vi tri dat sach tren ke: ");
+    ChuanHoaKhoangTrang(viTri);
+    if (KiemTraChuoiRong(viTri)) cout << "[LOI] Vi tri khong duoc de trong!\n";
+  } while (KiemTraChuoiRong(viTri));
+  cout << "Dau sach: " << pDS->tenSach << " | So luong: " << soLuong << " | Vi tri: " << viTri << '\n';
+  if (!XacNhanHanhDong("Xac nhan them ban sao?")) return;
 
   if (themBanSao(*pDS, soLuong, viTri)) {
     cout << "[THANH CONG] Da tao them " << soLuong
@@ -702,6 +723,22 @@ void ChucNang_MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   }
 }
 
+// Xem trước giúp đối chiếu đúng độc giả và bản sách trước khi thay đổi giao dịch.
+static bool XemTruocTraSach(const NodeDocGia *docGia, DanhSachDauSach &dsDS,
+                           const char *maSach) {
+  DauSach *dauSach = nullptr;
+  NodeDMS *cuon = nullptr;
+  if (!docGia || !timSachTheoMaSach(dsDS, maSach, dauSach, cuon) || !dauSach || !cuon) {
+    cout << "[LOI] Khong tim thay cuon sach.\n";
+    return false;
+  }
+  cout << "\n  XEM TRUOC GIAO DICH\n  Doc gia: " << docGia->data.ho << ' ' << docGia->data.ten
+       << " | Dang giu: " << DemSoSachDangMuon(docGia->data.dsMuonTra) << " / " << MAX_MUON_SACH
+       << "\n  Sach: " << dauSach->tenSach << " | Ma: " << maSach
+       << "\n  Vi tri: " << cuon->data.viTri << '\n';
+  return true;
+}
+
 void ChucNang_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
   cout << "\n--- [G]. GIAO DICH TRA SACH ---\n";
   int maThe;
@@ -735,6 +772,7 @@ void ChucNang_TraSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
     break;
   }
 
+  if (!XemTruocTraSach(pDG, dsDS, maSach)) return;
   if (!XacNhanHanhDong("Xac nhan tra cuon sach nay ve thu vien?")) {
     cout << "Da huy giao dich.\n";
     return;
@@ -781,6 +819,7 @@ void ChucNang_BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS) {
     break;
   }
 
+  if (!XemTruocTraSach(pDG, dsDS, maSach)) return;
   cout << "[CANH BAO] Sach se chuyen sang trang thai THANH LY va khong the cho muon tiep!\n";
   if (!XacNhanHanhDong("Ban co chac chan muon bao mat va thanh ly cuon sach nay?")) {
     cout << "Da huy thao tac.\n";
@@ -854,12 +893,12 @@ int main() {
   bool docDGOk = DocFileDocGia(root, FILE_DOCGIA);
   bool docDSOk = docDauSach(dsDS, FILE_DAUSACH);
 
-  // Nếu file chưa từng tồn tại, tự động tạo file rỗng chuẩn để người dùng nhìn thấy trong thư mục
-  if (!docDGOk) {
-    GhiFileDocGia(root, FILE_DOCGIA);
-  }
-  if (!docDSOk) {
-    ghiDauSach(dsDS, FILE_DAUSACH);
+  // Không ghi đè dữ liệu khi đọc lỗi: file có thể tồn tại nhưng bị hỏng.
+  if (!docDGOk || !docDSOk) {
+    cout << "[LOI] Khong the doc du lieu. Kiem tra file trong thu muc Data.\n";
+    GiaiPhongCayDocGia(root);
+    giaiPhongDauSach(dsDS);
+    return 1;
   }
 
   cout << "Khoi dong he thong thanh cong! (Hien co: "
@@ -868,49 +907,52 @@ int main() {
 
   int luaChon = -1;
   do {
-    cout << "\n=============================================================\n";
-    cout << "           HE THONG QUAN LY THU VIEN (C++ CTDL&GT)          \n";
-    cout << "   Nhom: Le Van Hoang Hieu (Doc Gia) & Le Anh Duc (Dau Sach) \n";
-    cout << "=============================================================\n";
-    cout << " --- [PHAN HE QUAN LY THE DOC GIA] ---\n";
-    cout << " [1].  Them the doc gia moi (Sinh ma tu dong)\n";
-    cout << " [2].  In danh sach doc gia theo MA THE (BST LNR)\n";
-    cout << " [3].  In danh sach doc gia theo TEN + HO (QuickSort)\n";
-    cout << " [4].  Tra cuu thong tin doc gia (Theo Ma the hoac Ten)\n";
-    cout << " [5].  Hieu chinh thong tin the doc gia\n";
-    cout << " [6].  Xoa the doc gia khoi cay BST\n";
-    cout << " ------------------------------------------------------------\n";
-    cout << " --- [PHAN HE QUAN LY DAU SACH & DANH MUC SACH] ---\n";
-    cout << " [7].  Them dau sach moi (Chen giu thu tu mang con tro)\n";
-    cout << " [8].  Them ban sao sach con vao Danh Muc Sach (DMS)\n";
-    cout << " [9].  In danh sach dau sach theo tung The Loai\n";
-    cout << " [10]. Tra cuu thong tin sach theo Ten / ISBN\n";
-    cout << " ------------------------------------------------------------\n";
-    cout << " --- [PHAN HE GIAO DICH MUON TRA & BAO CAO THONG KE] ---\n";
-    cout << " [11]. Giao dich MUON SACH (Bay 3 dieu kien, cap nhat DMS)\n";
-    cout << " [12]. Giao dich TRA SACH\n";
-    cout << " [13]. Giao dich BAO MAT SACH (Thanh ly)\n";
-    cout << " [14]. Liet ke danh sach sach doc gia dang muon\n";
-    cout << " [15]. Danh sach doc gia MUON SACH QUA HAN 7 NGAY\n";
-    cout << " [16]. Thong ke TOP 10 dau sach muon nhieu nhat\n";
-    cout << " ------------------------------------------------------------\n";
-    cout << " [0].  Luu du lieu va Thoat chuong trinh\n";
-    cout << "=============================================================\n";
-
-    if (!NhapSoNguyenAnToan(luaChon, 0, 16, "Nhap lua chon cua ban (0 - 16): ")) {
-      DungManHinh();
+    const MenuItem menu[] = {
+      {"DOC GIA", -1}, {"a  Quan ly the doc gia", 1},
+      {"b  Danh sach doc gia", 2}, {"SACH", -1},
+      {"c  Them dau sach va ban sao", 3}, {"d  Danh sach theo the loai", 4},
+      {"e  Tim sach theo ten", 5}, {"MUON TRA & THONG KE", -1},
+      {"f  Muon sach", 6}, {"g  Tra sach / Bao mat", 7},
+      {"h  Sach doc gia dang muon", 8}, {"i  Doc gia muon qua han", 9},
+      {"j  Top 10 sach duoc muon", 10}, {"0  Luu va thoat", 0}
+    };
+    luaChon = HienThiMenu("MENU CHINH", menu, sizeof(menu) / sizeof(menu[0]));
+    if (luaChon == 0 && !XacNhanHanhDong("Ban co muon luu va thoat?")) {
+      luaChon = -2;
       continue;
     }
+    if (luaChon == 1) {
+      const MenuItem sub[] = {{"1  Them doc gia", 1}, {"2  Hieu chinh", 5},
+                              {"3  Xoa doc gia", 6}, {"4  Tra cuu", 4}, {"0  Quay lai", 0}};
+      luaChon = HienThiMenu("QUAN LY DOC GIA", sub, 5);
+    } else if (luaChon == 2) {
+      const MenuItem sub[] = {{"1  Theo ma the", 2}, {"2  Theo ten va ho", 3}, {"0  Quay lai", 0}};
+      luaChon = HienThiMenu("DANH SACH DOC GIA", sub, 3);
+    } else if (luaChon == 3) {
+      const MenuItem sub[] = {{"1  Them dau sach", 7}, {"2  Them ban sao", 8}, {"0  Quay lai", 0}};
+      luaChon = HienThiMenu("THEM SACH", sub, 3);
+    } else if (luaChon == 7) {
+      const MenuItem sub[] = {{"1  Tra sach", 12}, {"2  Bao mat", 13}, {"0  Quay lai", 0}};
+      luaChon = HienThiMenu("TRA SACH", sub, 3);
+    } else if (luaChon > 3) {
+      const int map[] = {0, 0, 0, 0, 9, 10, 11, 0, 14, 15, 16};
+      luaChon = map[luaChon];
+    } else if (luaChon == 0) {
+      luaChon = -1; // Đánh dấu thoát đã xác nhận, tách khỏi quay lại menu con.
+    }
+    if (luaChon == 0) { luaChon = -2; continue; }
+    if (luaChon == -1) luaChon = 0;
+    XoaManHinhUI();
 
     switch (luaChon) {
     case 1:
       ChucNang_ThemDocGia(root);
       break;
     case 2:
-      InDanhSachDocGia_TheoMaThe(root);
+      BangDocGia(root, false);
       break;
     case 3:
-      InDanhSachDocGia_TheoTenHo(root);
+      BangDocGia(root, true);
       break;
     case 4:
       ChucNang_TraCuuDocGia(root);
