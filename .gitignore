@@ -1,4 +1,7 @@
 *.exe
 *.o
 *.obj
+Data/*.tmp
+Data/*.prepare
+Data/*.pending
 

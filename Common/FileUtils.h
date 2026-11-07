@@ -10,7 +10,7 @@
 #endif
 #include <windows.h>
 #endif
-// Một file là một dòng; mã hóa ký tự dành riêng để không tách nhầm nội dung.
+
 inline std::string maHoaTruong(const std::string &s) {
     std::string result;
     for(char c:s) {
@@ -49,7 +49,7 @@ inline bool ghiDuLieuMotDong(const std::string &fields,const char *path) {
     out<<'\n';out.close();
     return bool(out)&&thayFile(temp,path);
 }
-// Chỉ nhận định dạng một dòng có dấu |; dùng luồng trường để kiểm tra dữ liệu.
+
 inline bool docDuLieuFile(const char *path,std::string &fields) {
     std::ifstream input(path);if(!input)return false;
     std::ostringstream buffer;buffer<<input.rdbuf();
@@ -66,7 +66,6 @@ inline bool docDuLieuFile(const char *path,std::string &fields) {
         if(first==std::string::npos)return false;
         field=field.substr(first,field.find_last_not_of(" \t")-first+1);
         std::string decoded;if(!giaiMaTruong(field,decoded))return false;
-        // Xuống dòng không hợp lệ trong trường của định dạng hiện tại.
         if(decoded.find_first_of("\r\n")!=std::string::npos)return false;
         fields+=decoded+'\n';
         if(end==std::string::npos)break;

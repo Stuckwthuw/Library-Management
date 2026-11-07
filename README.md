@@ -1,189 +1,152 @@
-# ĐỒ ÁN CẤU TRÚC DỮ LIỆU & GIẢI THUẬT
-## ĐỀ TÀI: QUẢN LÝ THƯ VIỆN (C++)
+# Đồ án CTDL&GT — Quản lý thư viện C++
 
+- **Lê Văn Hoàng Hiếu — N24DECE018:** BST độc giả, DSLK mượn/trả, quá hạn và lưu độc giả.
+- **Lê Anh Đức — N24DECE012:** mảng con trỏ đầu sách, DMS, tìm kiếm, Top 10, Date và Core UI.
+- Phân công gốc 50/50: [kế hoạch chi tiết](KE_HOACH_PHAN_CHIA_CONG_VIEC.md).
+- Kế hoạch hoàn thiện, quyền thực hiện đã được Hiếu xác nhận và các việc nghiệm thu còn lại:
+  [KE_HOACH_HOAN_THIEN.md](KE_HOACH_HOAN_THIEN.md).
 
-## Bản lõi phần Đức (PR đầu tiên)
+## Chức năng hiện có
 
-Các API trong `DauSach.h`, `DanhMucSach.h`, `Date.h` triển khai phần cốt lõi Đ1–Đ6: mảng con trỏ tăng theo tên, DSLK danh mục, mã `ISBN_STT`, tìm kiếm ISBN/tên, gom thể loại, Top 10 và ngày tháng. Đây là thư viện hàm để ghép với UI và module của Hiếu; các mục d/e/j trả dữ liệu cho lớp hiển thị. Đã bổ sung đọc/ghi file đầu sách và module lưu trữ độc giả theo định dạng một dòng bên dưới. Giao diện, nhập liệu console và chương trình hoàn chỉnh sẽ ở PR sau.
+- a. Thêm, sửa, xóa thẻ độc giả; chặn xóa thẻ còn giữ sách.
+- b. Danh sách theo mã thẻ (LNR) hoặc tên/họ (QuickSort), có phân trang.
+- c. Thêm đầu sách và bản sao, sinh mã `[ISBN]_[STT]`, giữ thứ tự đầu sách theo tên.
+- d. Danh sách theo thể loại/tên, có phân trang và chọn STT xem chi tiết.
+- e. Tìm tên sách không phân biệt hoa/thường tiếng Việt; xem đủ thông tin và DMS phân trang.
+- f. Mượn sách: thẻ mở, dưới 3 cuốn, không quá hạn, cuốn sách sẵn có.
+- g. Trả/báo mất: kiểm tra liên kết và ngày trước khi đổi đồng thời giao dịch và DMS.
+- h. Liệt kê sách đang giữ và ngày mượn.
+- i. Quá hạn khi số ngày mượn **> 7**, giảm dần số ngày quá hạn, có phân trang.
+- j. Top 10 tính mọi lượt đang mượn/đã trả/mất, **kể cả lịch sử của thẻ đã xóa**.
+- Tra cứu độc giả theo mã hoặc tên/họ, hỗ trợ tiếng Việt và phân trang kết quả.
 
-`CauTruc.h` giữ nguyên. Không dùng container STL hoặc `std::sort`. QuickSort tự cài trong `DauSach/DauSach_NoiBo.h`; mảng tạm cấp phát bằng `new[]`, được `unique_ptr<T[]>` thu hồi tự động bằng `delete[]`.
+Các màn hình thay đổi dữ liệu có xác nhận Y/N; mượn/trả/báo mất có xem trước.
+Sau thay đổi, hệ thống lưu đồng bộ hai file; chỉ báo đã lưu khi thao tác lưu thành công.
+Nhập số phải khớp trọn dòng: `12abc`, `1.5`, tràn số hoặc sai miền đều bị từ chối.
+Chuỗi quá dài được yêu cầu nhập lại, không cắt âm thầm. EOF kết thúc phiên hữu hạn.
 
-### Kiểm thử độc lập bản lõi (Windows / MinGW, C++11)
+## Môi trường và biên dịch
 
-Trong PowerShell tại thư mục repository, với `g++` trong PATH:
+Windows, MinGW g++ hỗ trợ C++11, mã nguồn và dữ liệu UTF-8. `CauTruc.h` giữ nguyên.
+Không dùng `vector/list/map/set/queue/stack` hoặc `std::sort`. `unique_ptr<T[]>` chỉ
+quản lý cặp `new[]/delete[]`; các cấu trúc và thuật toán được tự cài đặt.
+
+Tại thư mục repository, trong PowerShell:
 
 ```powershell
-$modules = Get-ChildItem DauSach,DanhMucSach,Date -Filter '*.cpp' | ForEach-Object { $_.FullName }
-g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 DauSach/tests/kiem_thu_core.cpp $modules -o kiem_thu_core.exe
-.\kiem_thu_core.exe
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+.\QuanLyThuVien.exe
 ```
 
-Kết quả mong đợi: `PASS: DauSach, DMS, tim kiem, the loai, Top10, Date, QuickSort.`
+Script build bật `-Wall -Wextra -Wpedantic -Werror`: yêu cầu không lỗi/cảnh báo.
+Nếu dùng IDE, thêm các `.cpp` trực tiếp trong `DocGia`, `MuonTra`, `DauSach`,
+`DanhMucSach`, `Date`, `UI`, **`LuuTru`** và `main.cpp`; không đưa file test vào app.
 
-Các ca kiểm thử gồm: danh sách rỗng/đầy, ISBN trùng, tên và ISBN có thứ tự khác nhau, bộ đệm kết quả thiếu, tìm tiếng Việt trên Windows, mã sách vượt độ dài, dãy STT có khoảng trống, trạng thái sai, Top 10 ít/nhiều hơn 10 đầu sách, lượt đang mượn/đã trả/mất, mốc 7/8 ngày, năm nhuận và biên tháng/năm 1901–2101.
+## Cấu trúc mã nguồn
 
-### Giao tiếp để ghép module
+- `DocGia.h` / `DocGia/`: BST, LCG, chuẩn hóa, thêm/sửa/xóa, sắp xếp,
+  đọc/ghi độc giả và kho lịch sử thẻ đã xóa (`DocGia_LuuTru.cpp`).
+- `MuonTra.h` / `MuonTra/`: giao dịch, truy vấn đang mượn, lập danh sách quá hạn.
+- `DauSach.h` / `DauSach/`: mảng con trỏ, chỉ mục ISBN, thể loại, Top 10, file đầu sách.
+- `DanhMucSach.h` / `DanhMucSach/`: DSLK bản sao và trạng thái 0/1/2.
+- `Date.h` / `Date/`: ngày hợp lệ, năm nhuận, khoảng cách ngày.
+- `UI.h` / `UI/`: console, menu, bảng, nhập liệu, màn hình độc giả/sách/mượn trả.
+- `Common/`: chứa các header phụ trợ dùng chung `LuuTru.h`, `Chuoi.h` và `FileUtils.h`.
+- `LuuTru/`: kiểm tra liên kết toàn hệ thống và giao dịch lưu hai file.
+- `Common/Chuoi.h`: đổi UTF-8/UTF-16, phân loại, đổi hoa/thường và so sánh tiếng Việt trên Windows.
+- `Common/FileUtils.h`: mã hóa trường, đọc số nghiêm ngặt và thay file qua bản tạm.
+- `main.cpp`: vòng đời dữ liệu và điều hướng qua các master header.
 
-- `themDauSach`: nhận quyền sở hữu con trỏ và DMS khi thành công; nếu trả `false`, bên gọi vẫn phải quản lý/giải phóng chúng. `giaiPhongDauSach` thu hồi cả đầu sách và các cuốn con.
-- `themBanSao`: sinh mã nối tiếp STT lớn nhất, kiểm tra vừa `maSach[20]`, tạo chuỗi tạm trước khi nối để không để lại dữ liệu dở dang khi lỗi. Giữ cuốn thanh lý trong DMS để không tái sử dụng mã.
-- `timSachTheoMaSach`: trả đầu sách và node DMS cho Hiếu kiểm tra nghiệp vụ; `capNhatTrangThaiSach` chỉ nhận 0/1/2.
-- `timDauSachTheoTen`, `layDauSachTheoTheLoai`: bên gọi cấp mảng ít nhất `ds.n` con trỏ; trả số kết quả hoặc -1 nếu bộ đệm không hợp lệ. Con trỏ kết quả thuộc danh sách gốc. Từ đầu sách có thể lấy đầy đủ ISBN, tên, tác giả, năm, thể loại và duyệt DMS để in mục e.
-- `layTop10`: nhận cây độc giả chỉ đọc; cấp bộ đệm 10 phần tử `ThongKeSach`, nhận tối đa 10 kết quả giảm dần theo số lượt. Hòa lượt thì so tên rồi ISBN. Mọi trạng thái mượn trả đều được đếm; lịch sử phải còn được giữ để thống kê đầy đủ.
-- `khoangCachNgay(tu, den)`: trả số ngày `den - tu`; quá hạn khi lớn hơn `MAX_NGAY_MUON`. `{0,0,0}` chỉ dùng biểu diễn ngày trả chưa có, không tính khoảng cách. Miền ngày hợp lệ 1900–9999.
-- Chuỗi lưu UTF-8, giới hạn mảng `char` tính bằng byte; tìm tên không phân biệt hoa/thường, có phân biệt dấu. ISBN tối đa 14 byte, không chứa khoảng trắng hoặc dấu `_` dành cho phân tách mã.
+## Dữ liệu và phục hồi
 
-Mảng chính luôn tăng theo tên. Chỉ mục ISBN phụ xây lại O(N log N) sau thay đổi, các truy vấn tiếp theo O(log N); tìm cuốn trong DMS O(M). Chỉ mục cache một danh sách tại một thời điểm, dùng trong luồng console đơn. Các API thêm/khởi tạo/giải phóng tự vô hiệu cache; nếu bên gọi sửa ISBN/con trỏ trực tiếp, phải gọi `voHieuChiMucISBN()`.
+Ứng dụng dùng `Data/DocGia.txt` và `Data/DauSach.txt` tương đối với thư mục chạy.
+Cả hai chưa tồn tại là thư viện mới. Chỉ thiếu một file, file sai hoặc liên kết
+mượn–sách không nhất quán thì từ chối mở, không ghi đè dữ liệu đang có.
 
-Các danh sách đầu vào cần được khởi tạo và có liên kết hợp lệ (không chu trình); module lõi không quản lý giao dịch mượn/trả. Lỗi đối số của hàm sinh mã/ngày và lỗi cấp phát có thể ném ngoại lệ, bên giao diện xử lý thông báo. Bộ test tạo cây và lịch sử bằng struct để xác nhận đọc dữ liệu, không triển khai module của Hiếu.
+**Độc giả:** đọc được file nhiều dòng cũ (`ma,ho,ten,phai,trangThai`, số lượt,
+các dòng giao dịch). Lần lưu thành công tiếp theo tự chuyển sang **DOCGIA_V3**.
+V3 là một dòng, các trường phân cách bằng ` | `; ký tự `%` và `|` được mã hóa.
+Thứ tự trường:
 
----
+1. `DOCGIA_V3`, số độc giả.
+2. Với mỗi độc giả theo NLR: mã, họ, tên, phái, trạng thái, số lượt mượn.
+3. Mỗi lượt là một trường: `maSach dMuon mMuon yMuon dTra mTra yTra trangThai`.
+4. Cuối cùng: số lượt trong kho lưu trữ thẻ đã xóa và các lượt cùng cấu trúc.
 
+Ví dụ thư viện không còn thẻ, có một lượt đã trả được giữ lại:
 
-## Đọc/ghi file một dòng
+```text
+DOCGIA_V3 | 0 | 1 | CS101_1 1 10 2026 5 10 2026 1
+```
 
-`DauSach/DauSach_File.cpp`, `DocGia/DocGia_File.cpp` và `FileUtils.h` dùng file UTF-8, mỗi file một dòng, các trường phân cách bằng ` | `. Chỉ đọc định dạng này; file nhiều dòng cũ và `DOCGIA_V1` bị từ chối. Dấu `|` trong nội dung được lưu thành `%7C`, dấu `%` thành `%25`; khi đọc sẽ giải mã lại. Khoảng trắng quanh trường được bỏ khi đọc.
+File độc giả rỗng kiểu cũ biểu diễn cây rỗng. File V3 rỗng hợp lệ là
+`DOCGIA_V3 | 0 | 0`. V3 không tương thích ngược với chương trình cũ chỉ đọc CSV;
+không dùng chương trình cũ ghi đè sau khi đã chuyển đổi. Không hỗ trợ định dạng
+`DOCGIA_V2` từng được mô tả nhầm trong README cũ.
 
-Ví dụ một đầu sách có một cuốn sẵn sàng cho mượn:
+**Đầu sách:** giữ định dạng `DAUSACH_V1` một dòng như trước:
 
 ```text
 DAUSACH_V1 | 1 | CS101 | Cấu trúc dữ liệu | 300 | Nguyễn Văn An | 2025 | Tin học | 1 | CS101_1 | 0 | Kệ A1
 ```
 
-Thứ tự: phiên bản, số đầu sách; với mỗi đầu sách: ISBN, tên, số trang, tác giả, năm, thể loại, số cuốn; với mỗi cuốn: mã, trạng thái, vị trí.
+**Lưu đồng bộ:** `LuuDuLieu` kiểm tra liên kết, tạo hai ảnh `.prepare`, ghi nhật ký
+`Data/DocGia.txt.pending` qua `.tmp`, flush rồi mới thay lần lượt hai file đích.
+Nhật ký chứa cả hai ảnh và checksum phát hiện hỏng dữ liệu ngoài ý muốn. Nếu bị
+ngắt giữa chừng, lần mở sau hoàn tất cùng bản dữ liệu mới rồi xóa nhật ký.
+Nhật ký hỏng/không thể phục hồi sẽ làm ứng dụng dừng để bảo vệ dữ liệu.
 
-Ví dụ một độc giả chưa có lịch sử mượn, mã lớn nhất từng cấp là 5:
+Nếu báo lỗi lưu, kiểm tra dung lượng/quyền ghi và đóng chương trình khác đang khóa file,
+sau đó chọn thử lại. Nếu dừng phiên, **giữ nguyên `.pending` nếu có** để phục hồi.
+Thất bại trước khi công bố nhật ký giữ cặp file cũ; thay đổi trên RAM chưa được
+xác nhận lưu có thể mất nếu chọn dừng. Không xóa thủ công `.pending` hoặc sửa hai
+file trong khi chương trình đang chạy. Thiết kế dành cho **một tiến trình** quản lý
+thư viện; checksum không phải chữ ký chống sửa file có chủ đích, và phục hồi không
+thay thế sao lưu bên ngoài khi thiết bị lưu trữ hỏng.
 
-```text
-DOCGIA_V2 | 5 | 1 | 1 | Nguyễn Văn | Bình | Nam | 1 | 0 | 0
-```
+## Giao ước API và thuật toán cần nắm khi bảo vệ
 
-Thứ tự: phiên bản, mã lớn nhất từng cấp, số độc giả; với mỗi độc giả theo NLR: mã, họ, tên, phái, trạng thái thẻ, số lượt mượn; với mỗi lượt: mã cuốn, ngày mượn `d m y`, ngày trả `d m y`, trạng thái lượt. Cuối file: số lượt lưu trữ từ thẻ đã xóa, tiếp theo là các lượt cùng cấu trúc. Ngày trả khi đang mượn là `0 0 0`.
+- `themDauSach` nhận sở hữu con trỏ/DMS chỉ khi trả `true`; thất bại bên gọi thu hồi.
+- `ThemDocGia` nhận sở hữu DSLK mượn của dữ liệu truyền vào chỉ khi thành công.
+- `XoaDocGia` chuyển lịch sử hoàn tất sang kho riêng trước khi thu hồi thẻ.
+  Cuối phiên phải gọi cả `GiaiPhongCayDocGia` và `GiaiPhongLichSuLuuTru`.
+- `layTop10`/`thongKeLuotMuon` nhận tham số cuối tùy chọn là kho lịch sử.
+  App truyền `LayLichSuLuuTru()`; bỏ tham số này thì chỉ thống kê cây được truyền vào.
+- `DocFileDocGia` chỉ thay cây và kho lịch sử sau khi toàn bộ file hợp lệ.
+  App dùng `NapDuLieu` để kiểm tra thêm liên kết với DMS; không coi đọc từng file
+  thành công riêng lẻ là đủ để vận hành giao dịch.
+- BST tìm/chèn/xóa O(H), tệ nhất O(N). LCG chu kỳ 90.000 giúp phân tán mã nhưng
+  **không bảo đảm BST cân bằng**. Sinh một mã là O(T·H), tối đa 90.000 ứng viên.
+- QuickSort tự viết trung bình O(N log N), tệ nhất O(N²); median-of-three chỉ giảm
+  nguy cơ phân hoạch lệch. Không dùng lập luận “loại bỏ hoàn toàn O(N²)”.
+- Mảng đầu sách luôn tăng theo tên; chỉ mục ISBN phụ xây O(N log N), truy vấn tiếp
+  theo O(log N). Tìm cuốn trong DMS O(M), tìm chuỗi con tên sách duyệt O(N).
+- Kiểm tra liên kết dùng mảng phụ tự sắp xếp: O(C log C + L log C), bộ nhớ O(C),
+  với C bản sách và L tổng lượt lịch sử. Top 10 đếm cả lịch sử lưu trữ.
+- Chuỗi giới hạn theo **byte**, không phải số chữ. Bảng căn cột theo ký tự tiếng Việt;
+  dấu `~` báo nội dung bị rút gọn, có thể xem chi tiết đầu sách bằng STT.
 
-File được ghi qua `.tmp` rồi thay thế; đọc vào dữ liệu tạm, chỉ thay dữ liệu hiện có khi hợp lệ. Hai file chưa được lưu như một giao dịch chung. Sau khi nạp cả hai, gọi `kiemTraLienKetMuonTra` để kiểm tra trạng thái và liên kết cuốn sách.
+## Kiểm thử tự động
 
-Module lưu trữ độc giả cần `themDocGia` từ phân hệ Hiếu khi tích hợp. Bộ kiểm thử dưới đây cung cấp bộ nối BST riêng chỉ dành cho test; không đưa file test vào chương trình chính. Không sửa `CauTruc.h` hoặc đưa UI vào commit này.
+Cần g++ trong PATH; bộ test menu dùng Python 3 (thư viện chuẩn).
 
 ```powershell
-$modules = Get-ChildItem DauSach,DanhMucSach,Date,DocGia -Filter '*.cpp' | ForEach-Object { $_.FullName }
-g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 DauSach/tests/kiem_thu_file.cpp $modules -o kiem_thu_file.exe
-New-Item -ItemType Directory -Force .test-run | Out-Null
-Push-Location .test-run
-try { & ..\kiem_thu_file.exe } finally { Pop-Location }
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\chay_kiem_thu.ps1
 ```
 
-Kiểm thử gồm UTF-8, ký tự `|`/`%`, đọc lại đúng dữ liệu, cấu trúc BST NLR, lịch sử thẻ đã xóa, file rỗng, thiếu/thừa trường và từ chối file cũ mà vẫn giữ dữ liệu đang có.
+Script build app và chạy:
 
-## 👥 THÀNH VIÊN NHÓM & PHÂN CHIA CÔNG VIỆC
+- `DauSach/tests/kiem_thu_core.cpp`: đầu sách, DMS, tìm kiếm, thể loại, Top 10, Date, QuickSort.
+- `DauSach/tests/kiem_thu_file.cpp`: file đầu sách, UTF-8, ký tự `|/%`, file lỗi/rỗng.
+- `tests/kiem_thu_tich_hop.cpp`: BST, Unicode, nhập số, mượn/trả/mất, biên 7/8 ngày,
+  bảo toàn lịch sử, đọc file cũ/V3, file hỏng, giữ RAM khi nạp lỗi, lỗi ghi và phục hồi.
+- `tests/kiem_thu_menu.py`: chạy executable qua stdin, có timeout; thêm/tìm/hủy,
+  EOF, khởi động mới, file lỗi, mượn–trả–mất–xóa, Top 10 và bảng 25 dòng.
 
-| STT | Họ và Tên | MSSV | Vai trò | Phân hệ phụ trách | Tỷ lệ đóng góp |
-| :---: | :--- | :---: | :--- | :--- | :---: |
-| 1 | **Lê Văn Hoàng Hiếu** | **N24DECE018** | Trưởng nhóm | **Phân hệ Thẻ Độc Giả & Giao Dịch Mượn Trả**<br>• Cài đặt Cây nhị phân tìm kiếm BST (Thẻ độc giả)<br>• Cài đặt DSLK đơn Mượn Trả<br>• Nghiệp vụ mượn sách, trả sách, phạt quá hạn 7 ngày<br>• In danh sách độc giả (LNR / sắp xếp theo tên họ)<br>• Xử lý đọc/ghi file `DocGia.txt` | **50%** |
-| 2 | **Lê Anh Đức** | **N24DECE012** | Thành viên | **Phân hệ Đầu Sách, Danh Mục Sách & Core UI**<br>• Cài đặt Mảng con trỏ Đầu sách (luôn tăng dần theo tên)<br>• Cài đặt DSLK đơn Danh mục sách (DMS)<br>• Đánh mã sách tự động `[ISBN]_[STT]`, tìm kiếm sách theo tên<br>• Lọc sách theo thể loại, thống kê Top 10 sách mượn nhiều nhất<br>• Xây dựng Core UI Console & xử lý ngày tháng (`Date`)<br>• Xử lý đọc/ghi file `DauSach.txt` | **50%** |
+Mỗi lần chạy tạo thư mục mới trong `%TEMP%`; không dùng hoặc ghi dữ liệu thật của repo.
+Ca phục hồi khóa file đầu sách bằng Windows API để ép lỗi sau khi file độc giả đã
+được thay, rồi mở khóa và xác nhận nạp lại cả hai file nhất quán.
 
-👉 **Chi tiết kế hoạch triển khai, phân tích giải thuật và lộ trình 4 tuần xem tại:**  
-📄 [KE_HOACH_PHAN_CHIA_CONG_VIEC.md](./KE_HOACH_PHAN_CHIA_CONG_VIEC.md)
-
----
-
-## 🛠️ TỔ CHỨC 4 CẤU TRÚC DỮ LIỆU CỐT LÕI
-
-1. **Đầu sách**: Danh sách tuyến tính là 1 **Mảng con trỏ** (`DauSach* nodes[MAX]`). Mảng luôn được duy trì thứ tự tăng dần theo tên sách để tối ưu hóa tìm kiếm.
-2. **Danh mục sách (DMS)**: **Danh sách liên kết đơn** gắn với từng đầu sách. Mỗi cuốn sách có một mã duy nhất định danh theo quy tắc `[ISBN]_[SốThứTự]` phục vụ tìm kiếm nhị phân nhanh chóng. Trạng thái: `0` (cho mượn được), `1` (đã có độc giả mượn), `2` (đã thanh lý).
-3. **Danh sách thẻ độc giả**: **Cây nhị phân tìm kiếm (BST)** với khóa chính là `MATHE` (số nguyên tự động cung cấp không trùng lặp). Trạng thái: `0` (bị khóa), `1` (hoạt động).
-4. **Danh sách MUONTRA**: **Danh sách liên kết đơn** gắn với từng độc giả lưu lịch sử và các cuốn sách đang mượn. Trạng thái: `0` (đang mượn), `1` (đã trả), `2` (làm mất sách).
-
----
-
-## 📋 DANH SÁCH CHỨC NĂNG CHƯƠNG TRÌNH
-
-- [x] **a. Quản lý thẻ độc giả**: Thêm mới (sinh mã tự động), Xóa (thuật toán xóa node cây BST), Hiệu chỉnh thông tin độc giả.
-- [x] **b. In danh sách độc giả**: In theo thứ tự Tên + Họ tăng dần hoặc theo Mã độc giả tăng dần (duyệt cây LNR).
-- [x] **c. Nhập đầu sách & Đánh mã tự động**: Chèn giữ thứ tự theo tên sách, tự động sinh mã sách con trong danh mục sách.
-- [x] **d. In danh sách đầu sách theo thể loại**: Gom nhóm theo từng thể loại, tên sách tăng dần.
-- [x] **e. Tìm thông tin sách**: Tra cứu theo tên sách, in đầy đủ thông tin xuất bản và trạng thái từng cuốn sách con.
-- [x] **f. Mượn sách**: Kiểm tra thẻ mở, tối đa 3 cuốn, không giữ sách quá hạn (> 7 ngày), sách có sẵn để mượn.
-- [x] **g. Trả sách**: Cập nhật ngày trả, đổi trạng thái mượn trả và trạng thái sách trong danh mục.
-- [x] **h. Liệt kê sách đang mượn**: In danh sách mã sách, tên sách độc giả X đang mượn.
-- [x] **i. In độc giả mượn sách quá hạn**: Sắp xếp giảm dần theo số ngày quá hạn.
-- [x] **j. Thống kê Top 10 sách**: Xuất 10 đầu sách có số lượt mượn nhiều nhất.
-
----
-
-## 📁 CẤU TRÚC THƯ MỤC NGUỒN (SOURCE CODE)
-
-```
-QuanLyThuVien/
-│
-├── README.md                      # Giới thiệu đồ án & phân chia công việc
-├── KE_HOACH_PHAN_CHIA_CONG_VIEC.md# Tài liệu chi tiết kế hoạch & phân công WBS
-├── AGENTS.md                      # Hướng dẫn và quy chuẩn nghiêm ngặt cho AI Agents
-├── CauTruc.h                      # [Frozen Contract] Khai báo struct và các hằng số toàn cục
-│
-├── ── PHÂN HỆ HIẾU (ĐỘC GIẢ & MƯỢN TRẢ) ──────────────────────────────────
-├── DocGia.h                       # Khai báo nguyên mẫu hàm Thẻ độc giả
-├── DocGia/                        # Thư mục module hóa các chức năng độc giả
-│   ├── DocGia_Core.cpp            # Quản lý bộ nhớ & khởi tạo cây BST
-│   ├── DocGia_MaThe.cpp           # Tìm kiếm mã thẻ & sinh mã tự động LCG
-│   ├── DocGia_Them.cpp            # Nghiệp vụ thêm độc giả vào cây BST
-│   ├── DocGia_HieuChinh.cpp       # Hiệu chỉnh thông tin độc giả
-│   ├── DocGia_Xoa.cpp             # Xóa node BST (lá, 1 con, 2 con thế mạng)
-│   ├── DocGia_In.cpp              # In LNR tăng dần & QuickSort theo tên họ
-│   └── DocGia_File.cpp            # Đọc / Ghi file DocGia.txt (NLR)
-├── MuonTra.h                      # Khai báo nguyên mẫu hàm Mượn Trả
-├── MuonTra/                       # Thư mục module hóa giao dịch mượn trả
-│   ├── MuonTra_Core.cpp           # Khởi tạo, giải phóng DSLK mượn trả
-│   ├── MuonTra_Muon.cpp           # Nghiệp vụ mượn sách (bẫy 3 điều kiện)
-│   ├── MuonTra_Tra.cpp            # Nghiệp vụ trả sách / báo mất sách
-│   ├── MuonTra_LietKe.cpp         # Liệt kê sách đang mượn của độc giả
-│   └── MuonTra_QuaHan.cpp         # Lọc danh sách độc giả quá hạn 7 ngày
-│
-├── ── PHÂN HỆ ĐỨC (ĐẦU SÁCH, DMS, UI & DATE) ─────────────────────────────
-├── DauSach.h                      # Khai báo nguyên mẫu hàm Đầu sách
-├── DauSach/                       # Thư mục module hóa mảng con trỏ đầu sách
-│   ├── DauSach_Core.cpp           # Khởi tạo, giải phóng mảng con trỏ
-│   ├── DauSach_Them.cpp           # Chèn đầu sách giữ thứ tự tăng dần theo tên
-│   ├── DauSach_TimKiem.cpp        # Tìm kiếm sách theo tên, tìm nhị phân theo ISBN
-│   ├── DauSach_TheLoai.cpp        # Lọc danh sách đầu sách theo thể loại
-│   ├── DauSach_Top10.cpp          # Thống kê Top 10 sách mượn nhiều nhất
-│   └── DauSach_File.cpp           # Đọc / Ghi file DauSach.txt
-├── DanhMucSach.h                  # Khai báo nguyên mẫu hàm Danh mục sách
-├── DanhMucSach/                   # Thư mục module hóa DSLK danh mục sách con
-│   ├── DanhMucSach_Core.cpp       # Khởi tạo, giải phóng DSLK sách con
-│   ├── DanhMucSach_MaSach.cpp     # Đánh mã sách tự động [ISBN]_[STT]
-│   ├── DanhMucSach_Them.cpp       # Thêm sách con vào danh mục
-│   └── DanhMucSach_TrangThai.cpp  # Cập nhật trạng thái sách (0, 1, 2)
-├── Date.h                         # Khai báo hàm xử lý ngày tháng
-├── Date/                          # Thư mục xử lý ngày tháng
-│   ├── Date_Core.cpp              # Lấy ngày hệ thống, kiểm tra ngày hợp lệ (năm nhuận)
-│   └── Date_KhoangCach.cpp        # Tính khoảng cách số ngày giữa 2 mốc Date
-├── UI.h                           # Khai báo đồ họa console & bảng phân trang
-├── UI/                            # Thư mục giao diện console
-│   ├── UI_Console.cpp             # Xóa màn hình, gotoxy, màu sắc, vẽ box
-│   ├── UI_Menu.cpp                # Menu điều hướng bằng phím mũi tên
-│   └── UI_Table.cpp               # Bảng hiển thị phân trang chống tràn màn hình
-│
-├── Data/                          # Thư mục lưu trữ file dữ liệu (DocGia.txt, DauSach.txt)
-└── main.cpp                       # Điểm khởi chạy, menu điều hướng và giải phóng bộ nhớ
-```
-
----
-
-## 💻 HƯỚNG DẪN BIÊN DỊCH VÀ CHẠY
-
-### 1. Yêu cầu hệ thống
-- Hệ điều hành: Windows (tương thích các hàm đồ họa Console `windows.h`, `conio.h`).
-- Trình biên dịch: GCC / MinGW (C++11 trở lên), Dev-C++ 5.11, hoặc Visual Studio 2019/2022.
-
-### 2. Biên dịch bằng dòng lệnh (g++ MinGW)
-```bash
-# Biên dịch tất cả các file nguồn (theo kiến trúc thư mục module hóa)
-g++ -std=c++11 main.cpp DauSach/*.cpp DanhMucSach/*.cpp DocGia/*.cpp MuonTra/*.cpp UI/*.cpp Date/*.cpp -o QuanLyThuVien.exe
-
-# Chạy chương trình
-./QuanLyThuVien.exe
-```
-
-### 3. Mở bằng Dev-C++
-1. Chọn `File` -> `New` -> `Project...` -> Chọn `Console Application` (C++ Project).
-2. Thêm tất cả các file `.h` và `.cpp` vào Project.
-3. Nhấn `F11` (Compile & Run).
+Kiểm tra trực tiếp còn cần: mũi tên/Enter/Esc, Home/End, khung/cột với font console
+của máy và công cụ kiểm tra bộ nhớ. Test stdin không chứng minh các thao tác console
+thật hoặc mọi đường rò rỉ bộ nhớ đều đạt.

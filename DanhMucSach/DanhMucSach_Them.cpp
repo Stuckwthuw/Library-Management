@@ -4,10 +4,13 @@
 #include <limits>
 #include <cerrno>
 
-// Lấy STT lớn nhất thay vì số node để tránh trùng khi dãy mã có khoảng trống.
-// Giữ sách thanh lý trong DMS để không tái sử dụng mã.
-// Tạo chuỗi tạm rồi nối một lần: lỗi giữa chừng không đổi danh sách cũ.
-// O(M + K), với M cuốn cũ và K cuốn thêm.
+// ============================================================================
+// PHÂN HỆ: QUẢN LÝ DANH MỤC SÁCH (DSLK ĐƠN)
+// FILE: DanhMucSach_Them.cpp — Chức năng Thêm các bản sao sách vào đầu sách
+// PHỤ TRÁCH: LÊ ANH ĐỨC (N24DECE012)
+// ============================================================================
+
+// Thêm các bản sao sách mới vào danh mục sách của một đầu sách
 bool themBanSao(DauSach &d, int n, const char *vt) {
     if (n < 1 || !vt || !*vt || !d.ISBN[0] ||
         !std::memchr(d.ISBN, '\0', sizeof(d.ISBN)) ||
@@ -29,7 +32,6 @@ bool themBanSao(DauSach &d, int n, const char *vt) {
     if (maxSTT > std::numeric_limits<int>::max() - n) return false;
     NodeDMS *first = nullptr, *last = nullptr;
     try {
-        // Mã cuối dài nhất: kiểm tra trước khi cấp phát cả danh sách.
         sinhMaSach(d.ISBN, static_cast<int>(maxSTT) + n);
         for (int i = 0; i < n; ++i) {
             std::string ma = sinhMaSach(d.ISBN, static_cast<int>(maxSTT) + i + 1);

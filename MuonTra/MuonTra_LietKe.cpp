@@ -1,75 +1,22 @@
-#include "../DocGia.h"
 #include "../MuonTra.h"
-#include "../DauSach.h" // Móc nối API Đức: timSachTheoMaSach()
-#include <cstdio>
-#include <cstring>
-#include <iostream>
-
-using namespace std;
+#include "../DocGia.h"
 
 // ============================================================================
 // PHÂN HỆ: GIAO DỊCH MƯỢN TRẢ
-// FILE: MuonTra_LietKe.cpp — Chức năng (h): Liệt kê sách đang mượn (Ghép nối DMS)
+// FILE: MuonTra_LietKe.cpp — Lấy danh sách sách đang mượn của độc giả
 // PHỤ TRÁCH: LÊ VĂN HOÀNG HIẾU (N24DECE018)
 // ============================================================================
 
-// [HÀM LIỆT KÊ SÁCH ĐANG MƯỢN — PHIÊN BẢN GHÉP NỐI ĐẦY ĐỦ DMS]
-// Tra cứu tên sách thực tế từ mảng con trỏ DauSach của Đức để in bảng đẹp mắt.
-void LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS,
-                        int maThe) {
-  // Bước 1: Tìm độc giả trên cây BST
-  NodeDocGia *pDG = TimKiemDocGia(root, maThe);
-  if (pDG == nullptr) {
-    cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";
-    return;
-  }
-
-  // In thông tin độc giả
-  printf("\n===== DANH SACH SACH DANG MUON =====\n");
-  printf("Doc gia: %s %s (Ma the: %d)\n", pDG->data.ho, pDG->data.ten, maThe);
-
-  // Bước 2: Duyệt DSLK lọc các giao dịch đang mượn
-  NodeMuonTra *pCurr = pDG->data.dsMuonTra;
-  int stt = 0;
-
-  // In header bảng
-  printf(
-      "+-----+---------------+------------------------------+------------+\n");
-  printf(
-      "| STT |   Ma Sach     |         Ten Sach              | Ngay Muon  |\n");
-  printf(
-      "+-----+---------------+------------------------------+------------+\n");
-
-  while (pCurr != nullptr) {
-    if (pCurr->data.trangThai == 0) { // Đang mượn
-      stt++;
-
-      // Tra cứu tên sách bên module Đức
-      DauSach *pDauSach = nullptr;
-      NodeDMS *pCuonSach = nullptr;
-      const char *tenSach = "(Khong ro ten sach)";
-      if (timSachTheoMaSach(dsDS, pCurr->data.maSach, pDauSach, pCuonSach) &&
-          pDauSach != nullptr) {
-        tenSach = pDauSach->tenSach;
-      }
-
-      // In dòng dữ liệu đã căn chỉnh
-      printf("| %-3d | %-13s | %-28.28s | %02d/%02d/%04d |\n", stt,
-             pCurr->data.maSach, tenSach, pCurr->data.ngayMuon.ngay,
-             pCurr->data.ngayMuon.thang, pCurr->data.ngayMuon.nam);
+// Lấy danh sách các giao dịch đang mượn của độc giả vào mảng con trỏ
+int LaySachDangMuon(TREE_DocGia root, int maThe, const MuonTra **out, int capacity) {
+    const NodeDocGia *dg = TimKiemDocGia(root, maThe);
+    if (!dg || !out || capacity < 0) return -1;
+    int n = 0;
+    for (const NodeMuonTra *p = dg->data.dsMuonTra; p; p = p->pNext) {
+        if (p->data.trangThai == 0) {
+            if (n == capacity) return -1;
+            out[n++] = &p->data;
+        }
     }
-    pCurr = pCurr->pNext;
-  }
-
-  printf(
-      "+-----+---------------+------------------------------+------------+\n");
-
-  if (stt == 0) {
-    printf("| Doc gia hien khong muon cuon sach nao.                          "
-           "|\n");
-    printf("+-----+---------------+------------------------------+------------+"
-           "\n");
-  } else {
-    printf("Tong cong: %d cuon dang muon.\n", stt);
-  }
+    return n;
 }

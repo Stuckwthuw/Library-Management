@@ -2,8 +2,13 @@
 #include <cstring>
 #include <stdexcept>
 
-// Tiền tố ISBN xác định đầu sách, STT phân biệt từng cuốn.
-// '_' dành để phân tách; chặn tràn maSach[20], không cắt mã.
+// ============================================================================
+// PHÂN HỆ: QUẢN LÝ DANH MỤC SÁCH (DSLK ĐƠN)
+// FILE: DanhMucSach_MaSach.cpp — Sinh mã sách tự động [ISBN]_[STT]
+// PHỤ TRÁCH: LÊ ANH ĐỨC (N24DECE012)
+// ============================================================================
+
+// Sinh mã sách tự động kết hợp từ ISBN và số thứ tự
 std::string sinhMaSach(const char *ISBN, int stt) {
     if (!ISBN || !*ISBN || std::strlen(ISBN) >= sizeof(DauSach::ISBN) ||
         std::strpbrk(ISBN, "_ \t\r\n") || stt < 1)

@@ -10,13 +10,18 @@
 #include <windows.h>
 #endif
 
+// ============================================================================
+// PHÂN HỆ: QUẢN LÝ ĐẦU SÁCH (MẢNG CON TRỎ)
+// FILE: DauSach_TimKiem.cpp — Tìm kiếm đầu sách theo ISBN, tên sách và mã sách
+// PHỤ TRÁCH: LÊ ANH ĐỨC (N24DECE012)
+// ============================================================================
+
 namespace {
 const DanhSachDauSach *chuChiMuc = nullptr;
 int soPhanTu = -1;
 DauSach *chiMuc[MAX_DAUSACH];
 
-// Mảng chính bắt buộc sắp theo tên: dùng mảng phụ để tìm nhị phân theo ISBN.
-// Xây O(N log N) sau lần thay đổi, các truy vấn tiếp theo O(log N).
+// Xây dựng chỉ mục mảng phụ theo ISBN để tìm kiếm nhị phân
 void taoChiMuc(const DanhSachDauSach &ds) {
     if (chuChiMuc == &ds && soPhanTu == ds.n) return;
     for (int i = 0; i < ds.n; ++i) chiMuc[i] = ds.nodes[i];
@@ -27,7 +32,6 @@ void taoChiMuc(const DanhSachDauSach &ds) {
     soPhanTu = ds.n;
 }
 
-// Đổi UTF-8 sang UTF-16 để Windows xử lý hoa/thường tiếng Việt đúng từng ký tự.
 std::wstring chuThuong(const std::string &s) {
 #ifdef _WIN32
     if (s.empty()) return L"";
@@ -49,7 +53,7 @@ std::wstring chuThuong(const std::string &s) {
 
 void voHieuChiMucISBN() { chuChiMuc = nullptr; soPhanTu = -1; }
 
-// So sánh tên theo tiếng Việt trên Windows; giữ nguyên dấu của tên lưu trữ.
+// So sánh tên tiếng Việt không phân biệt hoa thường
 int soSanhTen(const char *a, const char *b) {
 #ifdef _WIN32
     std::wstring x = chuThuong(a), y = chuThuong(b);
@@ -60,18 +64,20 @@ int soSanhTen(const char *a, const char *b) {
     return std::strcmp(a, b);
 }
 
+// Kiểm tra tên sách có chứa từ khóa tìm kiếm hay không
 bool tenChuaTuKhoa(const char *ten, const std::string &tuKhoa) {
     return ten && !tuKhoa.empty() &&
            chuThuong(ten).find(chuThuong(tuKhoa)) != std::wstring::npos;
 }
 
+// Tách ISBN từ mã sách ([ISBN]_[STT])
 std::string trichXuatISBN(const char *maSach) {
     if (!maSach) return "";
     std::string s = maSach;
     return s.substr(0, s.find('_'));
 }
 
-// Trả nullptr khi danh sách rỗng hoặc không tìm được ISBN.
+// Tìm kiếm nhị phân đầu sách theo ISBN
 DauSach *timDauSachTheoISBN(const DanhSachDauSach &ds, const char *ISBN) {
     if (!ISBN || !*ISBN) return nullptr;
     taoChiMuc(ds);
@@ -86,8 +92,7 @@ DauSach *timDauSachTheoISBN(const DanhSachDauSach &ds, const char *ISBN) {
     return nullptr;
 }
 
-// O(log N + M) sau khi có chỉ mục; M là số cuốn của đầu sách cần tìm.
-// Không duyệt tất cả DMS vì tiền tố mã xác định duy nhất đầu sách.
+// Tìm đầu sách và bản sao sách theo mã sách cụ thể
 bool timSachTheoMaSach(const DanhSachDauSach &ds, const char *maSach,
                       DauSach *&dauSach, NodeDMS *&cuonSach) {
     dauSach = timDauSachTheoISBN(ds, trichXuatISBN(maSach).c_str());
@@ -96,8 +101,7 @@ bool timSachTheoMaSach(const DanhSachDauSach &ds, const char *maSach,
     return true;
 }
 
-// Duyệt O(N) vì tìm chuỗi con không có tính đơn điệu để tìm nhị phân.
-// Kết quả giữ thứ tự tên và cho phép truy cập đầy đủ dms để in mục e.
+// Tìm kiếm các đầu sách có tên chứa từ khóa
 int timDauSachTheoTen(const DanhSachDauSach &ds, const char *tuKhoa,
                      DauSach **ketQua, int sucChua) {
     if (sucChua < ds.n || (ds.n && !ketQua) || ketQua == ds.nodes) return -1;

@@ -2,6 +2,9 @@
 ## MÔN: CẤU TRÚC DỮ LIỆU & GIẢI THUẬT (C++)
 ### ĐỀ TÀI 3: QUẢN LÝ THƯ VIỆN
 
+> Cập nhật 07/11/2026: tiến độ sửa lỗi và tiêu chí nghiệm thu được theo dõi tại
+> [KE_HOACH_HOAN_THIEN.md](KE_HOACH_HOAN_THIEN.md). Lịch dưới đây là kế hoạch gốc.
+
 ---
 
 ## 1. THÔNG TIN CHUNG
@@ -47,8 +50,8 @@ graph TD
 | STT | Hạng mục công việc | Yêu cầu kỹ thuật & Giải thuật | Sản phẩm mã nguồn (File) |
 | :---: | :--- | :--- | :--- |
 | **H1** | **Cơ sở Cây BST & Quản lý Bộ nhớ** | • Khởi tạo cây, kiểm tra rỗng, đếm node đệ quy.<br>• Giải phóng DSLK mượn trả & thu hồi toàn bộ cây BST theo hậu thứ tự (LRN). Chống dangling pointer. | `DocGia.h`<br>`DocGia/DocGia_Core.cpp` |
-| **H2** | **Quản lý Mã thẻ & LCG chu kỳ đầy** | • Tìm kiếm theo mã thẻ O(log N).<br>• Cài đặt bộ sinh số đồng dư tuyến tính LCG (Hull-Dobell): O(1), sinh mã duy nhất, cây BST tự cân bằng tự nhiên. | `DocGia/DocGia_MaThe.cpp` |
-| **H3** | **Chức năng (a) - Thêm, Sửa, Xóa Độc Giả** | • **Thêm thẻ**: Chèn node BST, bẫy trùng mã và tràn RAM.<br>• **Hiệu chỉnh**: Tìm O(log N), sửa họ tên, phái, trạng thái (bảo toàn maThe).<br>• **Xóa thẻ**: Bẫy lỗi đang mượn sách. Xóa 3 trường hợp: node lá, node 1 con, node 2 con (tìm node thế mạng nhỏ nhất bên phải, tách an toàn `dsMuonTra`). | `DocGia/DocGia_Them.cpp`<br>`DocGia/DocGia_HieuChinh.cpp`<br>`DocGia/DocGia_Xoa.cpp` |
+| **H2** | **Quản lý Mã thẻ & LCG chu kỳ đầy** | • Tìm kiếm theo mã thẻ O(H), tệ nhất O(N).<br>• LCG chu kỳ đầy (Hull-Dobell): mỗi bước O(1), cấp mã O(T·H) có kiểm tra trùng; phân tán thứ tự chèn, không bảo đảm BST cân bằng. | `DocGia/DocGia_MaThe.cpp` |
+| **H3** | **Chức năng (a) - Thêm, Sửa, Xóa Độc Giả** | • **Thêm thẻ**: Chèn node BST, bẫy trùng mã và tràn RAM.<br>• **Hiệu chỉnh**: Tìm O(H), sửa họ tên, phái, trạng thái (bảo toàn maThe).<br>• **Xóa thẻ**: Bẫy lỗi đang mượn sách. Xóa 3 trường hợp: node lá, node 1 con, node 2 con (tìm node thế mạng nhỏ nhất bên phải, tách an toàn `dsMuonTra`). | `DocGia/DocGia_Them.cpp`<br>`DocGia/DocGia_HieuChinh.cpp`<br>`DocGia/DocGia_Xoa.cpp` |
 | **H4** | **Chức năng (b) - In danh sách độc giả** | • **Chế độ 1**: In theo `maThe` tăng dần $\rightarrow$ Duyệt cây BST LNR (In-order).<br>• **Chế độ 2**: In theo Tên + Họ tăng dần $\rightarrow$ Đổ cây vào mảng con trỏ tạm, QuickSort phân hoạch Median-of-Three. | `DocGia/DocGia_In.cpp` |
 | **H5** | **Cơ sở DSLK Mượn Trả** | • Khởi tạo DSLK mượn trả, kiểm tra rỗng, giải phóng danh sách. | `MuonTra.h`<br>`MuonTra/MuonTra_Core.cpp` |
 | **H6** | **Chức năng (f) - Nghiệp vụ Mượn Sách** | • Bẫy 3 điều kiện tiên quyết: (1) Thẻ đang mở (`trangThai == 1`), (2) Số sách đang mượn $< 3$ cuốn, (3) Không có sách mượn quá 7 ngày.<br>• Đủ điều kiện $\rightarrow$ thêm `NodeMuonTra`, gọi API Đức cập nhật sách bên DMS sang `1` (đã mượn). | `MuonTra/MuonTra_Muon.cpp` |

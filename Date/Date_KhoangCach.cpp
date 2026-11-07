@@ -1,7 +1,7 @@
 #include "../Date.h"
 #include <stdexcept>
 
-// Quy ngày Gregory thành số ngày nguyên O(1), tránh sai số giờ/múi giờ/DST.
+// Tính số ngày tuyệt đối theo lịch Gregory
 long long soNgayTuyetDoi(Date date) {
     if (!ngayHopLe(date)) throw std::invalid_argument("Ngay khong hop le");
     const long long a = (14 - date.thang) / 12;
@@ -10,13 +10,12 @@ long long soNgayTuyetDoi(Date date) {
     return date.ngay + (153*m+2)/5 + 365*y + y/4 - y/100 + y/400 - 32045;
 }
 
-// Trả den - tu; quá hạn khi kết quả > MAX_NGAY_MUON, đúng 7 ngày chưa quá hạn.
+// Tính khoảng cách giữa hai ngày (den - tu)
 int khoangCachNgay(Date tu, Date den) {
     return static_cast<int>(soNgayTuyetDoi(den) - soNgayTuyetDoi(tu));
 }
 
-// Dùng độ dài thực của tháng, không cộng cố định 28 khi lùi qua tháng trước.
-// Chặn ngày ngoài miền trước vòng lặp, kể cả soNgay bằng INT_MIN/INT_MAX.
+// Cộng thêm một số ngày vào một mốc ngày
 Date congNgay(Date date, int soNgay) {
     long long target = soNgayTuyetDoi(date) + soNgay;
     if (target < soNgayTuyetDoi(Date{1,1,1900}) ||

@@ -3,15 +3,13 @@
 #include <cstddef>
 
 namespace DauSachNoiBo {
-// Kiểm tra dấu kết thúc trước khi dùng strcmp/strcpy, tránh đọc ngoài mảng char.
+// Kiểm tra chuỗi hợp lệ
 template<std::size_t N>
 bool chuoiHopLe(const char (&s)[N]) {
     return s[0] != '\0' && std::memchr(s, '\0', N) != nullptr;
 }
 
-// QuickSort tự cài đặt: trung bình O(N log N), không dùng std::sort/container.
-// Pivot median-of-three hạn chế phân hoạch lệch với dữ liệu đã có thứ tự.
-// Chỉ đệ quy nhánh ngắn hơn để chặn độ sâu ngăn xếp ở O(log N).
+// Thuật toán QuickSort phân hoạch Median-of-Three
 template<class T, class Less>
 void sapXep(T *a, int trai, int phai, Less less) {
     while (trai < phai) {
