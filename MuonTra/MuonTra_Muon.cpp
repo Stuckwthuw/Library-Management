@@ -53,9 +53,9 @@ bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
   NodeMuonTra *pCheck = pDG->data.dsMuonTra;
   while (pCheck != nullptr) {
     if (pCheck->data.trangThai == 0 &&
-        strcmp(pCheck->data.maSach, maSach) == 0) {
-      cout << "[LOI] Doc gia " << maThe << " dang muon cuon sach " << maSach
-           << ". Khong the muon trung!\n";
+        CungISBN(pCheck->data.maSach, maSach)) {
+      cout << "[LOI] Doc gia " << maThe << " dang muon cuon " << pCheck->data.maSach
+           << " cung ISBN. Khong the muon hai cuon cung dau sach!\n";
       return false;
     }
     pCheck = pCheck->pNext;

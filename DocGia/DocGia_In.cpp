@@ -52,7 +52,10 @@ int SoSanhTenHo(const TheDocGia *a, const TheDocGia *b) {
     int cmpTen = Chuoi::soSanh(a->ten, b->ten);
     if (cmpTen != 0)
         return cmpTen;
-    return Chuoi::soSanh(a->ho, b->ho);
+    int cmpHo = Chuoi::soSanh(a->ho, b->ho);
+    if (cmpHo != 0) return cmpHo;
+    // Mã thẻ phân định hai người trùng họ tên, tránh thứ tự thay đổi sau QuickSort.
+    return (a->maThe > b->maThe) - (a->maThe < b->maThe);
 }
 
 // Sắp xếp mảng độc giả bằng QuickSort (phân hoạch Median-of-Three)

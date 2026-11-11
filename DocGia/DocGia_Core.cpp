@@ -124,6 +124,16 @@ bool KiemTraChuCaiVaKhoangTrang(const char *s) {
   return (KiemTraLoiHoTen(s, dummy) == 0);
 }
 
+// Chuẩn hóa bản sao trước khi kiểm tra để chấp nhận khoảng trắng ngoài tên,
+// nhưng không cắt bỏ từ người dùng đã nhập. O(L), bộ nhớ cố định theo trường tên.
+bool KiemTraTenMotTu(const char *s) {
+  if (!s || std::strlen(s) >= sizeof(TheDocGia{}.ten)) return false;
+  char ten[sizeof(TheDocGia{}.ten)];
+  std::strcpy(ten, s);
+  return DinhDangHoTen(ten) && KiemTraChuCaiVaKhoangTrang(ten) &&
+         std::strchr(ten, ' ') == nullptr;
+}
+
 // Kiểm tra định dạng mã sách [ISBN]_[STT]
 bool KiemTraDinhDangMaSach(const char *maSach) {
   if (maSach == nullptr || maSach[0] == '\0')

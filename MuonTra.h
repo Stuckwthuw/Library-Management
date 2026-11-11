@@ -35,6 +35,7 @@ int DemSoSachDangMuon(NodeMuonTra *dsMuonTra);
 bool KiemTraCoSachQuaHan(NodeMuonTra *dsMuonTra);
 KetQuaKiemTraMuon KiemTraDieuKienMuon(NodeDocGia *pDG);
 void TachISBN(const char *maSach, char *isbn);
+bool CungISBN(const char *a, const char *b);
 
 // ----------------------------------------------------------------------------
 // Nhóm 2: Chức năng (f) — Mượn sách (MuonTra_Muon.cpp)

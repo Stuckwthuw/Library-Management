@@ -28,8 +28,8 @@ bool HieuChinhDocGia(TREE_DocGia root, int maThe, const char *ho,
     cout << "[LOI] Ho moi khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
     return false;
   }
-  if (!KiemTraChuCaiVaKhoangTrang(ten)) {
-    cout << "[LOI] Ten moi khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
+  if (!KiemTraTenMotTu(ten)) {
+    cout << "[LOI] Ten chi gom mot tu; nhap phan con lai vao Ho va ten dem.\n";
     return false;
   }
 

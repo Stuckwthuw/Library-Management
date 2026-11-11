@@ -2,6 +2,7 @@
 
 #include "CauTruc.h"
 #include <cstddef>
+#include <string>
 
 // ============================================================================
 // PHÂN HỆ: QUẢN LÝ THẺ ĐỘC GIẢ (CÂY NHỊ PHÂN TÌM KIẾM - BST)
@@ -20,6 +21,7 @@ template<std::size_t N> bool DinhDangHoTen(char (&s)[N]) {
 void ChuanHoaMa(char *s);
 int KiemTraLoiHoTen(const char *s, char &kyTuViPham);
 bool KiemTraChuCaiVaKhoangTrang(const char *s);
+bool KiemTraTenMotTu(const char *s);
 bool KiemTraDinhDangMaSach(const char *maSach);
 bool ChuaChuoiConKhongPhanBietHoaThuong(const char *str, const char *subStr);
 
@@ -63,7 +65,8 @@ void InDanhSachDocGia_TheoTenHo(TREE_DocGia root);
 // Nhóm 5: Đọc và ghi file
 // ----------------------------------------------------------------------------
 bool GhiFileDocGia(TREE_DocGia root, const char *filePath = "Data/DocGia.txt");
-bool DocFileDocGia(TREE_DocGia &root, const char *filePath = "Data/DocGia.txt");
+bool DocFileDocGia(TREE_DocGia &root, const char *filePath = "Data/DocGia.txt",
+                   std::string *chuyenDoi = nullptr);
 
 // Quản lý lịch sử mượn trả của thẻ đã xóa
 const NodeMuonTra *LayLichSuLuuTru();
