@@ -1,3 +1,11 @@
+# Phân công web hiện hành (Hiếu và Đức đã thống nhất)
+
+Quy định này ưu tiên hơn các mô tả UI console lịch sử bên dưới.
+- Hiếu sở hữu Web/, Server/, Server.h; tích hợp main/build/test và quyền gỡ UI.h/UI/.
+- Đức giữ nghiệp vụ Đầu sách, DMS, Date và Top 10; không còn Core UI console.
+- Nhập/xuất tương tác qua web, xác nhận bằng hộp thoại; kiểm tra bắt buộc phía C++.
+- Không STL container/std::sort kể cả HTTP; giữ CauTruc.h và lưu đồng bộ hai file.
+- Kế hoạch hiện hành: KE_HOACH_PHAN_CHIA_CONG_VIEC.md.
 # AI AGENTS INSTRUCTIONS & DEVELOPMENT RULES
 ## PROJECT: QUẢN LÝ THƯ VIỆN (C++ DATA STRUCTURES & ALGORITHMS)
 

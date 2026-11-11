@@ -94,7 +94,10 @@ bool LuuDuLieu(TREE_DocGia root, const DanhSachDauSach &ds,
 
 // Nạp dữ liệu vào bộ nhớ và kiểm tra tính nhất quán
 bool NapDuLieu(TREE_DocGia &root, DanhSachDauSach &ds,
-               const char *dgPath, const char *dsPath, std::string &loi) {
+               const char *dgPath, const char *dsPath, std::string &loi,
+               std::string *chuyenDoi) {
+    if (chuyenDoi) chuyenDoi->clear();
+    std::string preview;
     if (!PhucHoiGiaoDich(dgPath, dsPath, loi)) return false;
     int a = tonTai(dgPath), b = tonTai(dsPath);
     if (a == 0 && b == 0) return true;
@@ -105,7 +108,7 @@ bool NapDuLieu(TREE_DocGia &root, DanhSachDauSach &ds,
     NodeMuonTra *oldArchive = TachLichSuLuuTru();
     bool ok = false;
     try {
-        ok = DocFileDocGia(tam, dgPath) && docDauSach(*books, dsPath) &&
+        ok = DocFileDocGia(tam, dgPath, &preview) && docDauSach(*books, dsPath) &&
              KiemTraLienKetMuonTra(tam, *books, loi);
     } catch (const std::exception &) { loi = "Khong du tai nguyen de nap du lieu."; }
     if (ok) {
@@ -115,6 +118,7 @@ bool NapDuLieu(TREE_DocGia &root, DanhSachDauSach &ds,
         voHieuChiMucISBN();
         GiaiPhongDSMuonTra(oldArchive);
         loi.clear();
+        if (chuyenDoi) *chuyenDoi = preview;
     } else ThayLichSuLuuTru(oldArchive);
     GiaiPhongCayDocGia(tam); giaiPhongDauSach(*books);
     return ok;

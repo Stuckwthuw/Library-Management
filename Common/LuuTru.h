@@ -11,4 +11,5 @@ bool PhucHoiGiaoDich(const char *docGia, const char *dauSach, std::string &loi);
 bool LuuDuLieu(TREE_DocGia root, const DanhSachDauSach &ds,
                const char *docGia, const char *dauSach, std::string &loi);
 bool NapDuLieu(TREE_DocGia &root, DanhSachDauSach &ds,
-               const char *docGia, const char *dauSach, std::string &loi);
+               const char *docGia, const char *dauSach, std::string &loi,
+               std::string *chuyenDoi = nullptr);

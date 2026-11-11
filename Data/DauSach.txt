@@ -1,1 +1,7 @@
-DAUSACH_V1 | 1 | IT001 | Giai Thuat Nang Cao | 450 | Le Anh Duc | 2026 | Giao Trinh | 0
+DAUSACH_V1 | 2 | DSA | Cấu trúc dữ liệu & Giải thuật | 100 | Idk | 2015 | Khoa học | 5
+DSA_1 | 0 | ngăn 1 - kệ 1 - tủ 1
+DSA_2 | 0 | ngăn 1 - kệ 1 - tủ 1
+DSA_3 | 0 | ngăn 1 - kệ 1 - tủ 1
+DSA_4 | 0 | ngăn 1 - kệ 1 - tủ 1
+DSA_5 | 0 | ngăn 1 - kệ 1 - tủ 1
+IT001 | Giai Thuat Nang Cao | 450 | Le Anh Duc | 2026 | Giao Trinh | 0

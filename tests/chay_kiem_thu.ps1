@@ -6,7 +6,7 @@ $flags = @('-std=c++11', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-finput-c
 Push-Location $repo
 try {
     $core = @(Get-ChildItem DauSach,DanhMucSach,Date -Filter '*.cpp' | ForEach-Object { $_.FullName })
-    $all = @($core) + @(Get-ChildItem DocGia,MuonTra,UI,LuuTru -Filter '*.cpp' | ForEach-Object { $_.FullName })
+    $all = @($core) + @(Get-ChildItem DocGia,MuonTra,Server,LuuTru -Filter '*.cpp' | ForEach-Object { $_.FullName })
     $jobs = @(
         @{ Name = 'core'; Source = 'DauSach/tests/kiem_thu_core.cpp'; Modules = $core },
         @{ Name = 'file'; Source = 'DauSach/tests/kiem_thu_file.cpp'; Modules = $core },
@@ -15,7 +15,7 @@ try {
     )
     foreach ($job in $jobs) {
         $exe = Join-Path $run ($job.Name + '.exe')
-        & g++ @flags $job.Source $job.Modules -o $exe
+        & g++ @flags $job.Source $job.Modules -lws2_32 -ladvapi32 -o $exe
         if ($LASTEXITCODE -ne 0) { throw ('Build failed: ' + $job.Name) }
         if ($job.Name -ne 'library') {
             $caseDir = Join-Path $run $job.Name
@@ -27,7 +27,7 @@ try {
             } finally { Pop-Location }
         }
     }
-    & python tests/kiem_thu_menu.py (Join-Path $run 'library.exe') $run
-    if ($LASTEXITCODE -ne 0) { throw 'Menu tests failed' }
+    & python tests/kiem_thu_web.py (Join-Path $run 'library.exe') $run
+    if ($LASTEXITCODE -ne 0) { throw 'Web tests failed' }
     Write-Output ('PASS: all builds and tests. Artifacts: ' + $run)
 } finally { Pop-Location }

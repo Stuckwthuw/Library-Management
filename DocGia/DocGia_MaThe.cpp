@@ -39,6 +39,6 @@ int SinhMaTheTuDong(TREE_DocGia root) {
         int ma = state + OFFSET;
         if (!KiemTraMaTheTonTai(root, ma)) return ma;
     }
-    std::cout << "[LOI] Kho ma the da day (90000 the).\n";
+
     return -1;
 }

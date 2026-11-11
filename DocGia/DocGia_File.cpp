@@ -172,7 +172,7 @@ bool DocFileDocGia(TREE_DocGia &root, const char *path, std::string *chuyenDoi) 
         if (chuyenDoi) *chuyenDoi = preview;
         return true;
     } catch (const std::exception &e) {
-        std::cerr << "[LOI] " << e.what() << '\n';
+
         GiaiPhongDSMuonTra(d.dsMuonTra);
         GiaiPhongDSMuonTra(archive);
         GiaiPhongCayDocGia(tam);

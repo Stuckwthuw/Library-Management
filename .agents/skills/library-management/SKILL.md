@@ -154,3 +154,6 @@ typedef NodeDocGia* TREE_DocGia;
    - **3. Phân tích nguyên nhân gốc rễ nếu sửa lỗi (Root Cause Bug Analysis)**: Lỗi gì, tại sao sai, giải pháp khắc phục.
    - **4. Cảnh báo tác động (Side-effect Warning)**: Có ảnh hưởng đến các hàm khác trong hệ thống hoặc module của Đức hay không.
    - **5. Hướng dẫn kiểm thử (Verification Guide)**: Kịch bản test chi tiết (Input nhập vào và Output mong đợi).
+## Cập nhật phân công web (Hiếu và Đức đã thống nhất)
+
+Quy định hiện hành ưu tiên hơn các mô tả quyền sở hữu UI ở trên: Hiếu phụ trách Web/, Server/, Server.h, API và tích hợp main/build/test, được gỡ UI.h/UI console. Đức giữ nghiệp vụ Đầu sách, DMS, Date và Top 10. Mọi nhập/xuất tương tác qua web; kiểm tra nghiệp vụ phía C++, lưu đồng bộ ngay sau thay đổi. Không STL container/std::sort kể cả HTTP. CauTruc.h giữ nguyên. Kế hoạch hiện hành nằm trong KE_HOACH_PHAN_CHIA_CONG_VIEC.md.

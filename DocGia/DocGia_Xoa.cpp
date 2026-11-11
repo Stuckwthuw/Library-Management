@@ -37,7 +37,7 @@ void TimNodeTheMang(NodeDocGia *&X, NodeDocGia *&Y) {
 // Xóa thẻ độc giả khỏi cây BST theo mã thẻ
 bool XoaDocGia(TREE_DocGia &root, int maThe) {
   if (root == nullptr) {
-    cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";
+
     return false;
   }
 
@@ -47,8 +47,7 @@ bool XoaDocGia(TREE_DocGia &root, int maThe) {
     return XoaDocGia(root->pRight, maThe);
   } else {
     if (KiemTraDocGiaDangMuonSach(root)) {
-      cout << "[CANH BAO] Doc gia ma the " << maThe
-           << " dang muon sach chua tra. Khong the xoa!\n";
+
       return false;
     }
 

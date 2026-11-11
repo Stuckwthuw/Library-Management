@@ -37,6 +37,16 @@ inline bool giaiMaTruong(const std::string &s,std::string &result) {
     return true;
 }
 inline bool thayFile(const std::string &temp,const char *dest);
+// Ghi ảnh văn bản đã chia theo bản ghi qua file tạm, chỉ thay đích khi ghi đủ.
+inline bool ghiVanBanAnToan(const std::string &text, const char *path) {
+    if (!path || !*path) return false;
+    const std::string temp = std::string(path) + ".tmp";
+    std::ofstream out(temp.c_str(), std::ios::trunc);
+    if (!out) return false;
+    out << text;
+    out.close();
+    return bool(out) && thayFile(temp, path);
+}
 inline bool ghiDuLieuMotDong(const std::string &fields,const char *path) {
     const std::string temp=std::string(path)+".tmp";
     std::ofstream out(temp.c_str(),std::ios::trunc);
@@ -57,7 +67,19 @@ inline bool docDuLieuFile(const char *path,std::string &fields) {
     std::string text=buffer.str();
     if(!text.empty()&&text.back()=='\n')text.pop_back();
     if(!text.empty()&&text.back()=='\r')text.pop_back();
-    if(text.find('|')==std::string::npos||text.find_first_of("\r\n")!=std::string::npos)return false;
+    if (!text.empty() && (text.back() == '\n' || text.back() == '\r')) return false;
+    if(text.find('|')==std::string::npos)return false;
+    // Mỗi dòng là một nhóm trường; nối về luồng trường nội bộ để tái sử dụng
+    // kiểm tra số lượng/ngữ nghĩa. Giữ tương thích file một dòng, LF và CRLF.
+    std::istringstream rows(text);
+    std::string row, joined;
+    while (std::getline(rows, row)) {
+        if (!row.empty() && row.back() == '\r') row.pop_back();
+        if (row.empty() || row.find_first_not_of(" \t") == std::string::npos) return false;
+        if (!joined.empty()) joined += " | ";
+        joined += row;
+    }
+    text = joined;
     fields.clear();std::size_t start=0;
     for(;;) {
         const std::size_t end=text.find('|',start);

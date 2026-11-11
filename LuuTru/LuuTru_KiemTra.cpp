@@ -1,6 +1,7 @@
 #include "../Common/LuuTru.h"
 #include "../DocGia.h"
 #include "../Date.h"
+#include "../MuonTra.h"
 #include "../DauSach/DauSach_NoiBo.h"
 #include <cstring>
 #include <memory>
@@ -11,6 +12,7 @@ struct Cuon { const NodeDMS *node; int dangMuon; };
 // Kiểm tra tính hợp lệ và nhất quán của các lượt mượn trả
 bool kiemTraDS(const NodeMuonTra *head, Cuon *a, int n, bool archive) {
     int dangGiu = 0;
+    const char *isbnDangGiu[MAX_MUON_SACH] = {};
     const Date homNay = ngayHienTaiHeThong();
     for (const NodeMuonTra *p = head; p; p = p->pNext) {
         const MuonTra &m = p->data;
@@ -19,6 +21,11 @@ bool kiemTraDS(const NodeMuonTra *head, Cuon *a, int n, bool archive) {
         if (m.trangThai == 0) {
             if (archive || ++dangGiu > MAX_MUON_SACH ||
                 m.ngayTra.ngay || m.ngayTra.thang || m.ngayTra.nam) return false;
+            // Chỉ tối đa ba cuốn đang giữ: O(L * MAX_MUON_SACH), không quét
+            // lại toàn bộ lịch sử cho từng giao dịch và không dùng container STL.
+            for (int i = 0; i < dangGiu - 1; ++i)
+                if (CungISBN(isbnDangGiu[i], m.maSach)) return false;
+            isbnDangGiu[dangGiu - 1] = m.maSach;
         } else if (!ngayHopLe(m.ngayTra) || khoangCachNgay(m.ngayMuon, m.ngayTra) < 0 ||
                    khoangCachNgay(m.ngayTra, homNay) < 0) return false;
         int l = 0, r = n - 1, found = -1;

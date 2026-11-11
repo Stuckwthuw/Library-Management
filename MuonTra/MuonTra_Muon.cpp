@@ -18,33 +18,29 @@ using namespace std;
 bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
               const char *maSach) {
   if (!KiemTraDinhDangMaSach(maSach)) {
-    cout << "[LOI] Ma sach \"" << (maSach ? maSach : "")
-         << "\" khong dung dinh dang [ISBN]_[STT] (Vi du: CS101_1)!\n";
+
     return false;
   }
 
   NodeDocGia *pDG = TimKiemDocGia(root, maThe);
   if (pDG == nullptr) {
-    cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";
+
     return false;
   }
 
   KetQuaKiemTraMuon maLoi = KiemTraDieuKienMuon(pDG);
   switch (maLoi) {
   case LOI_DU_LIEU_MUON:
-    cout << "[LOI] Du lieu muon khong hop le.\n";
+
     return false;
   case LOI_THE_BI_KHOA:
-    cout << "[LOI] The doc gia " << maThe
-         << " dang bi khoa. Khong the muon sach!\n";
+
     return false;
   case LOI_DA_MUON_TOI_DA:
-    cout << "[LOI] Doc gia " << maThe << " da muon toi da " << MAX_MUON_SACH
-         << " cuon. Khong the muon them!\n";
+
     return false;
   case LOI_CO_SACH_QUA_HAN:
-    cout << "[LOI] Doc gia " << maThe << " dang co sach muon qua han "
-         << MAX_NGAY_MUON << " ngay. Khong the muon them!\n";
+
     return false;
   case DU_DIEU_KIEN_MUON:
     break;
@@ -54,8 +50,7 @@ bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
   while (pCheck != nullptr) {
     if (pCheck->data.trangThai == 0 &&
         CungISBN(pCheck->data.maSach, maSach)) {
-      cout << "[LOI] Doc gia " << maThe << " dang muon cuon " << pCheck->data.maSach
-           << " cung ISBN. Khong the muon hai cuon cung dau sach!\n";
+
       return false;
     }
     pCheck = pCheck->pNext;
@@ -65,22 +60,16 @@ bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
   NodeDMS *pCuonSach = nullptr;
   if (!timSachTheoMaSach(dsDS, maSach, pDauSach, pCuonSach) ||
       pCuonSach == nullptr) {
-    cout << "[LOI] Ma sach " << maSach << " khong ton tai trong thu vien!\n";
+
     return false;
   }
   if (pCuonSach->data.trangThai != 0) {
-    if (pCuonSach->data.trangThai == 1) {
-      cout << "[LOI] Cuon sach " << maSach << " da co doc gia khac muon!\n";
-    } else {
-      cout << "[LOI] Cuon sach " << maSach
-           << " da bi thanh ly hoac khong con su dung!\n";
-    }
     return false;
   }
 
   NodeMuonTra *pNew = new (std::nothrow) NodeMuonTra;
   if (pNew == nullptr) {
-    cout << "[LOI] Khong du bo nho de tao giao dich muon tra!\n";
+
     return false;
   }
 
@@ -95,12 +84,7 @@ bool MuonSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe,
 
   capNhatTrangThaiSach(pCuonSach, 1);
 
-  cout << "[THANH CONG] Doc gia " << pDG->data.ho << " " << pDG->data.ten
-       << " (Ma: " << maThe << ") da muon sach \""
-       << (pDauSach ? pDauSach->tenSach : maSach)
-       << "\" (Ma: " << maSach << ") vao ngay " << pNew->data.ngayMuon.ngay
-       << "/" << pNew->data.ngayMuon.thang << "/"
-       << pNew->data.ngayMuon.nam << ".\n";
+
 
   return true;
 }

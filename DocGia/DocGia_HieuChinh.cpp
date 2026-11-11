@@ -15,21 +15,20 @@ bool HieuChinhDocGia(TREE_DocGia root, int maThe, const char *ho,
                      const char *ten, const char *phai, int trangThai) {
   NodeDocGia *pDG = TimKiemDocGia(root, maThe);
   if (pDG == nullptr) {
-    cout << "[LOI] Khong tim thay doc gia co ma the: " << maThe << "\n";
+
     return false;
   }
 
   if (trangThai != 0 && trangThai != 1) {
-    cout << "[LOI] Trang thai the chi chap nhan 1 (Hoat dong) hoac 0 (Khoa)!\n";
+
     return false;
   }
 
   if (!KiemTraChuCaiVaKhoangTrang(ho)) {
-    cout << "[LOI] Ho moi khong hop le (khong duoc chua chu so hoac ky tu dac biet)!\n";
+
     return false;
   }
   if (!KiemTraTenMotTu(ten)) {
-    cout << "[LOI] Ten chi gom mot tu; nhap phan con lai vao Ho va ten dem.\n";
     return false;
   }
 

@@ -5,13 +5,19 @@
 #include <cstdlib>
 bool ghiDauSach(const DanhSachDauSach &ds,const char *path) {
     std::ostringstream out;
-    out<<"DAUSACH_V1\n"<<ds.n<<'\n';
+    out<<"DAUSACH_V1 | "<<ds.n;
     for(int i=0;i<ds.n;++i) {
         const DauSach &d=*ds.nodes[i];
-        out<<d.ISBN<<'\n'<<d.tenSach<<'\n'<<d.soTrang<<'\n'<<d.tacGia<<'\n'<<d.namXuatBan<<'\n'<<d.theLoai<<'\n'<<demSoLuongDMS(d.dms)<<'\n';
-        for(NodeDMS *p=d.dms;p;p=p->pNext)out<<p->data.maSach<<'\n'<<p->data.trangThai<<'\n'<<p->data.viTri<<'\n';
+        if (i == 0) out << " | ";
+        out<<maHoaTruong(d.ISBN)<<" | "<<maHoaTruong(d.tenSach)<<" | "<<d.soTrang
+           <<" | "<<maHoaTruong(d.tacGia)<<" | "<<d.namXuatBan<<" | "
+           <<maHoaTruong(d.theLoai)<<" | "<<demSoLuongDMS(d.dms)<<'\n';
+        // Mỗi bản sao một dòng, giữ thứ tự DSLK và mã hóa dấu phân cách trong dữ liệu.
+        for(NodeDMS *p=d.dms;p;p=p->pNext)
+            out<<maHoaTruong(p->data.maSach)<<" | "<<p->data.trangThai<<" | "<<maHoaTruong(p->data.viTri)<<'\n';
     }
-    return bool(out)&&ghiDuLieuMotDong(out.str(),path);
+    if (ds.n == 0) out << '\n';
+    return bool(out)&&ghiVanBanAnToan(out.str(),path);
 }
 bool docDauSach(DanhSachDauSach &ds,const char *path) {
     std::string fields;if(!docDuLieuFile(path,fields))return false;

@@ -51,12 +51,10 @@ bool BaoMatSach(TREE_DocGia root, DanhSachDauSach &dsDS, int maThe, const char *
 // ----------------------------------------------------------------------------
 // Nhóm 4: Chức năng (h) — Liệt kê sách đang mượn (MuonTra_LietKe.cpp)
 // ----------------------------------------------------------------------------
-void LietKeSachDangMuon(TREE_DocGia root, const DanhSachDauSach &dsDS, int maThe);
 int LaySachDangMuon(TREE_DocGia root, int maThe, const MuonTra **out, int capacity);
 
 // ----------------------------------------------------------------------------
 // Nhóm 5: Chức năng (i) — Thống kê quá hạn (MuonTra_QuaHan.cpp)
 // ----------------------------------------------------------------------------
 int DemTongSachQuaHan(TREE_DocGia root);
-void InDanhSachDocGiaQuaHan(TREE_DocGia root);
 int LapDanhSachQuaHan(TREE_DocGia root, QuaHanInfo *&ketQua);

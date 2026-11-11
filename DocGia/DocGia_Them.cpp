@@ -22,19 +22,17 @@ bool ThemDocGia(TREE_DocGia &root, TheDocGia dg) {
     return false;
 
   if (!KiemTraChuCaiVaKhoangTrang(dg.ho)) {
-    cout << "[LOI] Ho va ten dem khong hop le (khong duoc chua chu so hoac ky "
-            "tu dac biet)!\n";
+
     return false;
   }
   if (!KiemTraTenMotTu(dg.ten)) {
-    cout << "[LOI] Ten chi gom mot tu; nhap phan con lai vao Ho va ten dem.\n";
     return false;
   }
 
   if (root == nullptr) {
     NodeDocGia *pNew = new (std::nothrow) NodeDocGia;
     if (pNew == nullptr) {
-      cout << "[LOI] Khong du bo nho de cap phat node moi!\n";
+
       return false;
     }
     pNew->data = dg;
@@ -46,7 +44,7 @@ bool ThemDocGia(TREE_DocGia &root, TheDocGia dg) {
   }
 
   if (dg.maThe == root->data.maThe) {
-    cout << "[LOI] Ma the " << dg.maThe << " da ton tai trong he thong!\n";
+
     return false;
   }
 

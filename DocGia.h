@@ -55,11 +55,9 @@ bool XoaDocGia(TREE_DocGia &root, int maThe);
 // ----------------------------------------------------------------------------
 // Nhóm 4: Chức năng (b) - In danh sách độc giả
 // ----------------------------------------------------------------------------
-void InDanhSachDocGia_TheoMaThe(TREE_DocGia root);
 void DoCayVaoMang(TREE_DocGia root, TheDocGia *arr[], int &index);
 int SoSanhTenHo(const TheDocGia *a, const TheDocGia *b);
 void QuickSortDocGia(TheDocGia *arr[], int left, int right);
-void InDanhSachDocGia_TheoTenHo(TREE_DocGia root);
 
 // ----------------------------------------------------------------------------
 // Nhóm 5: Đọc và ghi file

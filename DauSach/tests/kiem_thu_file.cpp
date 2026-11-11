@@ -6,6 +6,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <sstream>
 
 namespace {
 std::string motDong(const char *path) {
@@ -25,7 +26,10 @@ int main() {
     assert(themBanSao(*d,2,"Kệ A1"));assert(themDauSach(*ds,d.get()));d.release();
     assert(capNhatTrangThaiSach(ds->nodes[0]->dms,1));
     assert(ghiDauSach(*ds,"books.txt"));
-    const std::string books=motDong("books.txt");
+    std::ifstream input("books.txt"); std::ostringstream content; content << input.rdbuf();
+    const std::string books=content.str();
+    assert(books.find("\nCS101_1 | 1 | ") != std::string::npos);
+    assert(books.find("\nCS101_2 | 0 | ") != std::string::npos);
     assert(books.find("DAUSACH_V1 | 1 | CS101 | ")==0);
     assert(books.find("%7C")!=std::string::npos&&books.find("%25")!=std::string::npos);
     assert(docDauSach(*loaded,"books.txt")&&loaded->n==1);
@@ -41,5 +45,5 @@ int main() {
     assert(docDauSach(*loaded,"empty-books.txt")&&loaded->n==0);
 
     giaiPhongDauSach(*ds);giaiPhongDauSach(*loaded);
-    std::cout<<"PASS: file mot dong, UTF-8, ky tu |/%, file rong va file loi.\n";
+    std::cout<<"PASS: file nhieu dong, UTF-8, ky tu |/%, file rong va file loi.\n";
 }

@@ -1,152 +1,84 @@
-# Đồ án CTDL&GT — Quản lý thư viện C++
+﻿# Quản lý thư viện — C++ và web localhost
 
-- **Lê Văn Hoàng Hiếu — N24DECE018:** BST độc giả, DSLK mượn/trả, quá hạn và lưu độc giả.
-- **Lê Anh Đức — N24DECE012:** mảng con trỏ đầu sách, DMS, tìm kiếm, Top 10, Date và Core UI.
-- Phân công gốc 50/50: [kế hoạch chi tiết](KE_HOACH_PHAN_CHIA_CONG_VIEC.md).
-- Kế hoạch hoàn thiện, quyền thực hiện đã được Hiếu xác nhận và các việc nghiệm thu còn lại:
-  [KE_HOACH_HOAN_THIEN.md](KE_HOACH_HOAN_THIEN.md).
+Ứng dụng Windows chạy offline với HTML/CSS/JavaScript thuần và máy chủ C++11 Winsock.
+Hiếu phụ trách web, HTTP/API, tích hợp, BST độc giả và DSLK mượn trả. Đức phụ trách Đầu sách, DMS, Date, tìm kiếm và Top 10.
+Xem [phân công mới](KE_HOACH_PHAN_CHIA_CONG_VIEC.md).
 
-## Chức năng hiện có
+## Khởi động
 
-- a. Thêm, sửa, xóa thẻ độc giả; chặn xóa thẻ còn giữ sách.
-- b. Danh sách theo mã thẻ (LNR) hoặc tên/họ (QuickSort), có phân trang.
-- c. Thêm đầu sách và bản sao, sinh mã `[ISBN]_[STT]`, giữ thứ tự đầu sách theo tên.
-- d. Danh sách theo thể loại/tên, có phân trang và chọn STT xem chi tiết.
-- e. Tìm tên sách không phân biệt hoa/thường tiếng Việt; xem đủ thông tin và DMS phân trang.
-- f. Mượn sách: thẻ mở, dưới 3 cuốn, không quá hạn, cuốn sách sẵn có.
-- g. Trả/báo mất: kiểm tra liên kết và ngày trước khi đổi đồng thời giao dịch và DMS.
-- h. Liệt kê sách đang giữ và ngày mượn.
-- i. Quá hạn khi số ngày mượn **> 7**, giảm dần số ngày quá hạn, có phân trang.
-- j. Top 10 tính mọi lượt đang mượn/đã trả/mất, **kể cả lịch sử của thẻ đã xóa**.
-- Tra cứu độc giả theo mã hoặc tên/họ, hỗ trợ tiếng Việt và phân trang kết quả.
-
-Các màn hình thay đổi dữ liệu có xác nhận Y/N; mượn/trả/báo mất có xem trước.
-Sau thay đổi, hệ thống lưu đồng bộ hai file; chỉ báo đã lưu khi thao tác lưu thành công.
-Nhập số phải khớp trọn dòng: `12abc`, `1.5`, tràn số hoặc sai miền đều bị từ chối.
-Chuỗi quá dài được yêu cầu nhập lại, không cắt âm thầm. EOF kết thúc phiên hữu hạn.
-
-## Môi trường và biên dịch
-
-Windows, MinGW g++ hỗ trợ C++11, mã nguồn và dữ liệu UTF-8. `CauTruc.h` giữ nguyên.
-Không dùng `vector/list/map/set/queue/stack` hoặc `std::sort`. `unique_ptr<T[]>` chỉ
-quản lý cặp `new[]/delete[]`; các cấu trúc và thuật toán được tự cài đặt.
-
-Tại thư mục repository, trong PowerShell:
+Cần MinGW g++ hỗ trợ C++11 và PowerShell. Không cần Node.js, npm hoặc Internet.
+Chạy từ thư mục dự án:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 .\QuanLyThuVien.exe
 ```
 
-Script build bật `-Wall -Wextra -Wpedantic -Werror`: yêu cầu không lỗi/cảnh báo.
-Nếu dùng IDE, thêm các `.cpp` trực tiếp trong `DocGia`, `MuonTra`, `DauSach`,
-`DanhMucSach`, `Date`, `UI`, **`LuuTru`** và `main.cpp`; không đưa file test vào app.
+Mở **http://127.0.0.1:8080**. Đổi cổng: `.\QuanLyThuVien.exe 8081`.
+Dùng nút **Dừng ứng dụng** trên web. Đóng tab không dừng server.
+Terminal chỉ ghi log kỹ thuật. Mã thoát 3: cổng bận; mã 4: một phiên thư viện đang chạy.
+Một tiến trình sở hữu dữ liệu; server bind loopback và xử lý yêu cầu tuần tự.
 
-## Cấu trúc mã nguồn
+## Chức năng
 
-- `DocGia.h` / `DocGia/`: BST, LCG, chuẩn hóa, thêm/sửa/xóa, sắp xếp,
-  đọc/ghi độc giả và kho lịch sử thẻ đã xóa (`DocGia_LuuTru.cpp`).
-- `MuonTra.h` / `MuonTra/`: giao dịch, truy vấn đang mượn, lập danh sách quá hạn.
-- `DauSach.h` / `DauSach/`: mảng con trỏ, chỉ mục ISBN, thể loại, Top 10, file đầu sách.
-- `DanhMucSach.h` / `DanhMucSach/`: DSLK bản sao và trạng thái 0/1/2.
-- `Date.h` / `Date/`: ngày hợp lệ, năm nhuận, khoảng cách ngày.
-- `UI.h` / `UI/`: console, menu, bảng, nhập liệu, màn hình độc giả/sách/mượn trả.
-- `Common/`: chứa các header phụ trợ dùng chung `LuuTru.h`, `Chuoi.h` và `FileUtils.h`.
-- `LuuTru/`: kiểm tra liên kết toàn hệ thống và giao dịch lưu hai file.
-- `Common/Chuoi.h`: đổi UTF-8/UTF-16, phân loại, đổi hoa/thường và so sánh tiếng Việt trên Windows.
-- `Common/FileUtils.h`: mã hóa trường, đọc số nghiêm ngặt và thay file qua bản tạm.
-- `main.cpp`: vòng đời dữ liệu và điều hướng qua các master header.
+- Độc giả: thêm/sửa/xóa, tìm mã/họ tên, sắp xếp mã hoặc tên/họ, xem sách đang giữ.
+- Kho sách: thêm đầu sách/bản sao, tìm tên/ISBN, danh sách theo thể loại, xem kệ và trạng thái bản sao.
+- Mượn/trả/báo mất: xem trước họ tên, số sách đang giữ, tên sách, kệ; xác nhận trước khi ghi.
+- Quá hạn trên 7 ngày và Top 10 gồm lịch sử thẻ đã xóa.
+- Bảng phân trang 20 dòng; API cho phép tối đa 100 dòng/trang.
+
+Frontend chỉ trình bày. Nghiệp vụ, BST, DSLK, mảng con trỏ và sắp xếp tự viết chạy ở C++.
+Không dùng STL container hoặc std::sort, kể cả lớp HTTP. CauTruc.h giữ nguyên.
+Tên độc giả chỉ một từ; phần còn lại thuộc họ và tên đệm. Chuỗi giới hạn theo byte UTF-8.
+Một độc giả không giữ đồng thời hai cuốn cùng ISBN, tối đa 3 cuốn và không được mượn khi quá hạn.
+
+## Kiến trúc và API
+
+Trình duyệt → HTTP/API → nghiệp vụ C++ → lưu đồng bộ hai file.
+Web/ chứa tài nguyên tĩnh; Server/ chứa HTTP, codec và API; Server.h là master header.
+main.cpp quản lý vòng đời. Không còn UI console hoặc nhập liệu bằng bàn phím terminal.
+
+GET /api/v1/: status, readers, books, copies?isbn=, loans?id=,
+preview?id=&code=, overdue, top. Danh sách nhận page, size, q;
+readers nhận sort=name; books nhận genre.
+POST dùng application/x-www-form-urlencoded: readers/add, readers/edit, readers/delete,
+books/add, copies/add, borrow, return, lost, save, migrate, stop.
+Mọi POST cần token và version lấy từ status. Phản hồi gồm ok, code, message, version, data.
+Mã lỗi: 400 nhập liệu, 403 nguồn/phiên sai, 404 không tìm thấy, 409 xung đột, 503 lỗi nạp/lưu.
+HTTP giới hạn header 8 KiB, body 64 KiB; không hỗ trợ chunked; đóng kết nối sau phản hồi.
+Host/Origin và token chống yêu cầu ghi từ trang ngoài. Tài nguyên tĩnh được liệt kê cố định.
 
 ## Dữ liệu và phục hồi
 
-Ứng dụng dùng `Data/DocGia.txt` và `Data/DauSach.txt` tương đối với thư mục chạy.
-Cả hai chưa tồn tại là thư viện mới. Chỉ thiếu một file, file sai hoặc liên kết
-mượn–sách không nhất quán thì từ chối mở, không ghi đè dữ liệu đang có.
+Dữ liệu nằm trong Data/DocGia.txt và Data/DauSach.txt, tương đối với thư mục chạy.
+Sao lưu cả hai trước khi chuyển phiên bản. Không chạy chương trình cũ để ghi đè định dạng mới.
+DOCGIA_V3 lưu mỗi độc giả và lượt mượn trên dòng riêng; DAUSACH_V1 lưu bản sao trên dòng riêng.
+Bộ đọc vẫn hỗ trợ định dạng một dòng cũ. Lịch sử thẻ đã xóa được giữ để tính Top 10.
+Cả hai file chưa tồn tại là thư viện mới; thiếu một file, dữ liệu lỗi hoặc liên kết sai sẽ khóa nghiệp vụ.
 
-**Độc giả:** đọc được file nhiều dòng cũ (`ma,ho,ten,phai,trangThai`, số lượt,
-các dòng giao dịch). Lần lưu thành công tiếp theo tự chuyển sang **DOCGIA_V3**.
-V3 là một dòng, các trường phân cách bằng ` | `; ký tự `%` và `|` được mã hóa.
-Thứ tự trường:
+Mọi thay đổi gọi LuuDuLieu trước khi báo thành công. Lưu đồng bộ dùng ảnh .prepare,
+nhật ký .pending chứa checksum và hai ảnh dữ liệu; khởi động sau hoàn tất giao dịch dang dở.
+Nếu lỗi lưu, web khóa giao dịch mới và hiện nút thử lưu lại. Không gửi lại thao tác thêm/mượn.
+Giữ nguyên .pending nếu phục hồi thất bại; kiểm tra quyền ghi, dung lượng và file bị khóa.
+Đóng cưỡng bức trước khi lưu có thể mất thay đổi trên RAM. Chỉ nút Dừng ứng dụng mới kiểm tra trạng thái chưa lưu.
+Chuyển tên cũ nhiều từ cần xác nhận trên web. Dừng trước xác nhận không ghi chuyển đổi.
+Tab cũ bị từ chối khi version không còn khớp; tải lại trước khi thao tác tiếp.
 
-1. `DOCGIA_V3`, số độc giả.
-2. Với mỗi độc giả theo NLR: mã, họ, tên, phái, trạng thái, số lượt mượn.
-3. Mỗi lượt là một trường: `maSach dMuon mMuon yMuon dTra mTra yTra trangThai`.
-4. Cuối cùng: số lượt trong kho lưu trữ thẻ đã xóa và các lượt cùng cấu trúc.
+## Thuật toán và giao ước
 
-Ví dụ thư viện không còn thẻ, có một lượt đã trả được giữ lại:
+BST tìm/chèn/xóa O(H), tệ nhất O(N). LCG phân tán mã nhưng không bảo đảm cây cân bằng.
+QuickSort tự viết trung bình O(N log N), tệ nhất O(N²). Duyệt LNR cho thứ tự mã thẻ.
+Danh sách sách theo thể loại, tìm kiếm và Top 10 dùng các API của Đức.
+themDauSach và ThemDocGia chỉ nhận quyền sở hữu dữ liệu khi thành công.
+Xóa độc giả chuyển lịch sử đã hoàn tất sang kho lưu trữ; giải phóng cây và kho khi dừng.
 
-```text
-DOCGIA_V3 | 0 | 1 | CS101_1 1 10 2026 5 10 2026 1
-```
-
-File độc giả rỗng kiểu cũ biểu diễn cây rỗng. File V3 rỗng hợp lệ là
-`DOCGIA_V3 | 0 | 0`. V3 không tương thích ngược với chương trình cũ chỉ đọc CSV;
-không dùng chương trình cũ ghi đè sau khi đã chuyển đổi. Không hỗ trợ định dạng
-`DOCGIA_V2` từng được mô tả nhầm trong README cũ.
-
-**Đầu sách:** giữ định dạng `DAUSACH_V1` một dòng như trước:
-
-```text
-DAUSACH_V1 | 1 | CS101 | Cấu trúc dữ liệu | 300 | Nguyễn Văn An | 2025 | Tin học | 1 | CS101_1 | 0 | Kệ A1
-```
-
-**Lưu đồng bộ:** `LuuDuLieu` kiểm tra liên kết, tạo hai ảnh `.prepare`, ghi nhật ký
-`Data/DocGia.txt.pending` qua `.tmp`, flush rồi mới thay lần lượt hai file đích.
-Nhật ký chứa cả hai ảnh và checksum phát hiện hỏng dữ liệu ngoài ý muốn. Nếu bị
-ngắt giữa chừng, lần mở sau hoàn tất cùng bản dữ liệu mới rồi xóa nhật ký.
-Nhật ký hỏng/không thể phục hồi sẽ làm ứng dụng dừng để bảo vệ dữ liệu.
-
-Nếu báo lỗi lưu, kiểm tra dung lượng/quyền ghi và đóng chương trình khác đang khóa file,
-sau đó chọn thử lại. Nếu dừng phiên, **giữ nguyên `.pending` nếu có** để phục hồi.
-Thất bại trước khi công bố nhật ký giữ cặp file cũ; thay đổi trên RAM chưa được
-xác nhận lưu có thể mất nếu chọn dừng. Không xóa thủ công `.pending` hoặc sửa hai
-file trong khi chương trình đang chạy. Thiết kế dành cho **một tiến trình** quản lý
-thư viện; checksum không phải chữ ký chống sửa file có chủ đích, và phục hồi không
-thay thế sao lưu bên ngoài khi thiết bị lưu trữ hỏng.
-
-## Giao ước API và thuật toán cần nắm khi bảo vệ
-
-- `themDauSach` nhận sở hữu con trỏ/DMS chỉ khi trả `true`; thất bại bên gọi thu hồi.
-- `ThemDocGia` nhận sở hữu DSLK mượn của dữ liệu truyền vào chỉ khi thành công.
-- `XoaDocGia` chuyển lịch sử hoàn tất sang kho riêng trước khi thu hồi thẻ.
-  Cuối phiên phải gọi cả `GiaiPhongCayDocGia` và `GiaiPhongLichSuLuuTru`.
-- `layTop10`/`thongKeLuotMuon` nhận tham số cuối tùy chọn là kho lịch sử.
-  App truyền `LayLichSuLuuTru()`; bỏ tham số này thì chỉ thống kê cây được truyền vào.
-- `DocFileDocGia` chỉ thay cây và kho lịch sử sau khi toàn bộ file hợp lệ.
-  App dùng `NapDuLieu` để kiểm tra thêm liên kết với DMS; không coi đọc từng file
-  thành công riêng lẻ là đủ để vận hành giao dịch.
-- BST tìm/chèn/xóa O(H), tệ nhất O(N). LCG chu kỳ 90.000 giúp phân tán mã nhưng
-  **không bảo đảm BST cân bằng**. Sinh một mã là O(T·H), tối đa 90.000 ứng viên.
-- QuickSort tự viết trung bình O(N log N), tệ nhất O(N²); median-of-three chỉ giảm
-  nguy cơ phân hoạch lệch. Không dùng lập luận “loại bỏ hoàn toàn O(N²)”.
-- Mảng đầu sách luôn tăng theo tên; chỉ mục ISBN phụ xây O(N log N), truy vấn tiếp
-  theo O(log N). Tìm cuốn trong DMS O(M), tìm chuỗi con tên sách duyệt O(N).
-- Kiểm tra liên kết dùng mảng phụ tự sắp xếp: O(C log C + L log C), bộ nhớ O(C),
-  với C bản sách và L tổng lượt lịch sử. Top 10 đếm cả lịch sử lưu trữ.
-- Chuỗi giới hạn theo **byte**, không phải số chữ. Bảng căn cột theo ký tự tiếng Việt;
-  dấu `~` báo nội dung bị rút gọn, có thể xem chi tiết đầu sách bằng STT.
-
-## Kiểm thử tự động
-
-Cần g++ trong PATH; bộ test menu dùng Python 3 (thư viện chuẩn).
+## Kiểm thử
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\chay_kiem_thu.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File tests/chay_kiem_thu.ps1
 ```
 
-Script build app và chạy:
-
-- `DauSach/tests/kiem_thu_core.cpp`: đầu sách, DMS, tìm kiếm, thể loại, Top 10, Date, QuickSort.
-- `DauSach/tests/kiem_thu_file.cpp`: file đầu sách, UTF-8, ký tự `|/%`, file lỗi/rỗng.
-- `tests/kiem_thu_tich_hop.cpp`: BST, Unicode, nhập số, mượn/trả/mất, biên 7/8 ngày,
-  bảo toàn lịch sử, đọc file cũ/V3, file hỏng, giữ RAM khi nạp lỗi, lỗi ghi và phục hồi.
-- `tests/kiem_thu_menu.py`: chạy executable qua stdin, có timeout; thêm/tìm/hủy,
-  EOF, khởi động mới, file lỗi, mượn–trả–mất–xóa, Top 10 và bảng 25 dòng.
-
-Mỗi lần chạy tạo thư mục mới trong `%TEMP%`; không dùng hoặc ghi dữ liệu thật của repo.
-Ca phục hồi khóa file đầu sách bằng Windows API để ép lỗi sau khi file độc giả đã
-được thay, rồi mở khóa và xác nhận nạp lại cả hai file nhất quán.
-
-Kiểm tra trực tiếp còn cần: mũi tên/Enter/Esc, Home/End, khung/cột với font console
-của máy và công cụ kiểm tra bộ nhớ. Test stdin không chứng minh các thao tác console
-thật hoặc mọi đường rò rỉ bộ nhớ đều đạt.
+Cần Python 3 khi test. Script build với -Wall -Wextra -Wpedantic -Werror, kiểm thử nghiệp vụ,
+file, tích hợp và HTTP trên dữ liệu tạm. Không dùng dữ liệu thật cho test phá hủy.
+Kiểm tra thủ công: thêm độc giả/sách, mượn/trả/báo mất, hủy xác nhận, phân trang,
+hai tab, Unicode, bàn phím, màn hình nhỏ và khởi động lại.

@@ -4,7 +4,6 @@
 #include "../MuonTra.h"
 #include "../Date.h"
 #include "../Common/LuuTru.h"
-#include "../UI.h"
 #include <cassert>
 #include <cstring>
 #include <fstream>
@@ -25,9 +24,9 @@ TheDocGia reader(int id) {
     std::strcpy(d.ho, "Nguyen Van"); std::strcpy(d.ten, "An"); std::strcpy(d.phai, "Nam");
     return d;
 }
-DauSach *book(DanhSachDauSach &ds) {
+DauSach *book(DanhSachDauSach &ds, const char *isbn = "AUDIT") {
     DauSach *d = new DauSach{};
-    std::strcpy(d->ISBN, "AUDIT"); std::strcpy(d->tenSach, "Test Book");
+    std::strcpy(d->ISBN, isbn); std::strcpy(d->tenSach, "Test Book");
     std::strcpy(d->tacGia, "Test Author"); std::strcpy(d->theLoai, "Test");
     d->soTrang = 100; d->namXuatBan = 2026;
     assert(themBanSao(*d, 4, "Ke A1")); assert(themDauSach(ds, d)); return d;
@@ -35,13 +34,6 @@ DauSach *book(DanhSachDauSach &ds) {
 int countHistory(const NodeMuonTra *p) {
     int n = 0; for (; p; p = p->pNext) ++n; return n;
 }
-struct Input {
-    std::istringstream stream;
-    std::streambuf *old;
-    explicit Input(const char *s) : stream(s), old(std::cin.rdbuf(stream.rdbuf())) { std::cin.clear(); }
-    ~Input() { std::cin.rdbuf(old); std::cin.clear(); }
-};
-
 void testNhap() {
     char s[50] = u8"  đẶNG   VĂN   ánh ";
     assert(DinhDangHoTen(s) && !std::strcmp(s, u8"Đặng Văn Ánh"));
@@ -50,16 +42,7 @@ void testNhap() {
     assert(!KiemTraChuCaiVaKhoangTrang("An123"));
     assert(!KiemTraChuCaiVaKhoangTrang("\xFF"));
     assert(!KiemTraDinhDangMaSach("A_9999999999999999999"));
-    for (const char *bad : {"12abc\n", "1.5\n", "9999999999999999\n", "0\n", "101\n", " \n"}) {
-        Input input(bad); int n = 42;
-        assert(!NhapSoNguyenAnToan(n, 1, 100, "") && n == 42);
-    }
-    { Input input(" 12 \n"); int n = 0; assert(NhapSoNguyenAnToan(n, 1, 100, "") && n == 12); }
-    { Input input(""); int n = 0; bool eof = false;
-      try { NhapSoNguyenAnToan(n, 1, 100, ""); } catch (const HetDuLieuNhap &) { eof = true; }
-      assert(eof); }
-    { Input input("abcdef\nAn\n"); char small[4]; NhapChuoiAnToan(small, 4); assert(!std::strcmp(small,"An")); }
-    { Input input("yes\nN\n"); assert(!XacNhanHanhDong("Test")); }
+
 }
 
 void testBST() {
@@ -88,6 +71,44 @@ void testBST() {
     GiaiPhongCayDocGia(root);
 }
 
+void testTenVaSapXep() {
+    assert(KiemTraTenMotTu(u8"  hiếu  "));
+    for (const char *s : {"", "   ", "Hoang Hieu", "Anh\tThu", "An2", "An!"})
+        assert(!KiemTraTenMotTu(s));
+    TREE_DocGia root = nullptr;
+    TheDocGia d = reader(50000); std::strcpy(d.ten, "Hoang Hieu");
+    assert(!ThemDocGia(root, d) && !root);
+    assert(ThemDocGia(root, reader(50000)));
+    assert(!HieuChinhDocGia(root, 50000, "Le Van", "Hoang Hieu", "Nam", 1));
+    assert(!std::strcmp(root->data.ten, "An"));
+    TheDocGia a = reader(3), b = reader(2), c = reader(1), e = reader(4);
+    std::strcpy(a.ten, "Khoa"); std::strcpy(b.ten, "Hieu");
+    std::strcpy(e.ho, "Tran");
+    TheDocGia *arr[] = {&a, &e, &b, &c};
+    QuickSortDocGia(arr, 0, 3);
+    assert(arr[0] == &c && arr[1] == &e && arr[2] == &b && arr[3] == &a);
+    e = c; e.maThe = 9;
+    assert(SoSanhTenHo(&c, &e) < 0);
+    assert(CungISBN("A_1", "A_2") && !CungISBN("A_1", "AB_2"));
+
+    std::string preview;
+    write("old-name.txt", "DOCGIA_V3 | 1 | 60000 | Le Van | Hoang Hieu | Nam | 1 | 0 | 0\n");
+    assert(DocFileDocGia(root, "old-name.txt", &preview));
+    assert(!std::strcmp(root->data.ho, "Le Van Hoang") && !std::strcmp(root->data.ten, "Hieu"));
+    assert(preview.find("Le Van Hoang | Hieu") != std::string::npos);
+    NodeDocGia *old = root;
+    write("overflow-name.txt", std::string("60000,") + std::string(48, 'A') + ",Hoang Hieu,Nam,1\n0\n");
+    assert(!DocFileDocGia(root, "overflow-name.txt") && root == old);
+    const Date today = LayNgayHienTai();
+    std::ostringstream bad;
+    bad << "60000,Le Van,Hieu,Nam,1\n2\n";
+    for (int i = 1; i <= 2; ++i)
+        bad << "AUDIT_" << i << ' ' << today.ngay << ' ' << today.thang << ' ' << today.nam << " 0 0 0 0\n";
+    write("duplicate-isbn.txt", bad.str());
+    assert(!DocFileDocGia(root, "duplicate-isbn.txt") && root == old);
+    GiaiPhongCayDocGia(root);
+}
+
 void testGiaoDich() {
     TREE_DocGia root = nullptr; DanhSachDauSach ds{}; DauSach *d = book(ds);
     assert(ThemDocGia(root, reader(50000)));
@@ -100,8 +121,12 @@ void testGiaoDich() {
     root->data.dsMuonTra->data.ngayMuon = congNgay(LayNgayHienTai(), -8);
     assert(KiemTraCoSachQuaHan(root->data.dsMuonTra) && !MuonSach(root, ds, 50000, "AUDIT_2"));
     root->data.dsMuonTra->data.ngayMuon = LayNgayHienTai();
-    assert(MuonSach(root, ds, 50000, "AUDIT_2") && MuonSach(root, ds, 50000, "AUDIT_3"));
-    assert(!MuonSach(root, ds, 50000, "AUDIT_4"));
+    assert(!MuonSach(root, ds, 50000, "AUDIT_2"));
+    assert(DemSoSachDangMuon(root->data.dsMuonTra) == 1);
+    assert(timKiemDMS(d->dms, "AUDIT_2")->data.trangThai == 0);
+    DauSach *other = book(ds, "OTHER"); book(ds, "THIRD"); book(ds, "FOURTH");
+    assert(MuonSach(root, ds, 50000, "OTHER_1") && MuonSach(root, ds, 50000, "THIRD_1"));
+    assert(!MuonSach(root, ds, 50000, "FOURTH_1"));
     NodeDMS *cuon = timKiemDMS(d->dms, "AUDIT_1");
     cuon->data.trangThai = 0;
     assert(!TraSach(root, ds, 50000, "AUDIT_1") && DemSoSachDangMuon(root->data.dsMuonTra) == 3);
@@ -109,11 +134,13 @@ void testGiaoDich() {
     assert(TraSach(root, ds, 50000, "AUDIT_1"));
     const MuonTra *dangMuon[MAX_MUON_SACH];
     assert(LaySachDangMuon(root, 50000, dangMuon, MAX_MUON_SACH) == 2);
-    assert(BaoMatSach(root, ds, 50000, "AUDIT_2") && timKiemDMS(d->dms, "AUDIT_2")->data.trangThai == 2);
-    assert(TraSach(root, ds, 50000, "AUDIT_3"));
-    ThongKeSach top[10]; assert(layTop10(ds, root, top, 10, LayLichSuLuuTru()) == 1 && top[0].soLuotMuon == 3);
+    assert(BaoMatSach(root, ds, 50000, "OTHER_1") && timKiemDMS(other->dms, "OTHER_1")->data.trangThai == 2);
+    assert(TraSach(root, ds, 50000, "THIRD_1"));
+    assert(MuonSach(root, ds, 50000, "AUDIT_2"));
+    assert(TraSach(root, ds, 50000, "AUDIT_2"));
+    ThongKeSach top[10]; assert(layTop10(ds, root, top, 10, LayLichSuLuuTru()) == 4 && top[0].soLuotMuon == 2);
     assert(XoaDocGia(root, 50000));
-    assert(layTop10(ds, root, top, 10, LayLichSuLuuTru()) == 1 && top[0].soLuotMuon == 3);
+    assert(layTop10(ds, root, top, 10, LayLichSuLuuTru()) == 4 && top[0].soLuotMuon == 2);
     std::string loi;
     assert(LuuDuLieu(root, ds, "readers.txt", "books.txt", loi));
     const NodeMuonTra *archive = LayLichSuLuuTru();
@@ -121,8 +148,8 @@ void testGiaoDich() {
     assert(!DocFileDocGia(root, "archive-bad.txt") && LayLichSuLuuTru() == archive);
     GiaiPhongLichSuLuuTru(); giaiPhongDauSach(ds);
     assert(NapDuLieu(root, ds, "readers.txt", "books.txt", loi));
-    assert(!root && countHistory(LayLichSuLuuTru()) == 3);
-    assert(layTop10(ds, root, top, 10, LayLichSuLuuTru()) == 1 && top[0].soLuotMuon == 3);
+    assert(!root && countHistory(LayLichSuLuuTru()) == 4);
+    assert(layTop10(ds, root, top, 10, LayLichSuLuuTru()) == 4 && top[0].soLuotMuon == 2);
     giaiPhongDauSach(ds); GiaiPhongLichSuLuuTru();
 }
 
@@ -203,6 +230,6 @@ void testPhucHoi() {
 }
 
 int main() {
-    testNhap(); testBST(); testGiaoDich(); testFileLoi(); testPhucHoi();
+    testNhap(); testBST(); testTenVaSapXep(); testGiaoDich(); testFileLoi(); testPhucHoi();
     std::cout << "PASS: tich hop, Unicode, BST, muon-tra, luu tru, phuc hoi giao dich.\n";
 }

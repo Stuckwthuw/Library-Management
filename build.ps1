@@ -6,11 +6,11 @@ try {
     $targetPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot $OutputPath))
     $targetDirectory = Split-Path -Parent $targetPath
     New-Item -ItemType Directory -Force -Path $targetDirectory | Out-Null
-    # Biên dịch sang tên mới; chỉ thay executable đang dùng sau khi g++ thành công.
+    # BiÃªn dá»‹ch sang tÃªn má»›i; chá»‰ thay executable Ä‘ang dÃ¹ng sau khi g++ thÃ nh cÃ´ng.
     $stagingPath = Join-Path $targetDirectory ([guid]::NewGuid().ToString('N') + '.building.exe')
-    $modules = @(Get-ChildItem DauSach,DanhMucSach,DocGia,MuonTra,Date,UI,LuuTru -Filter '*.cpp' |
+    $modules = @(Get-ChildItem DauSach,DanhMucSach,DocGia,MuonTra,Date,Server,LuuTru -Filter '*.cpp' |
         ForEach-Object { $_.FullName })
-    & g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 main.cpp $modules -o $stagingPath
+    & g++ -std=c++11 -Wall -Wextra -Wpedantic -Werror -finput-charset=UTF-8 -fexec-charset=UTF-8 main.cpp $modules -lws2_32 -ladvapi32 -o $stagingPath
     if ($LASTEXITCODE -ne 0) { throw "g++ exited with code $LASTEXITCODE" }
     Move-Item -LiteralPath $stagingPath -Destination $targetPath -Force
     $stagingPath = $null
